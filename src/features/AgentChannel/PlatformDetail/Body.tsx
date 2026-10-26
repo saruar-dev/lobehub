@@ -118,6 +118,7 @@ const Body = memo<BodyProps>(
         const field = platformDef.schema.find((section) => section.key === 'applicationId');
         return field && <ApplicationIdField disabled={disabled} field={field} />;
       }
+      if (key === 'extras') return CredentialExtras && <CredentialExtras disabled={disabled} />;
       const field = credentialFields.find((item) => item.key === key);
       return (
         field && <SchemaField fullWidth disabled={disabled} field={field} parentKey="credentials" />
@@ -125,6 +126,7 @@ const Body = memo<BodyProps>(
     };
 
     const groupCredentialFields = credentialFields.filter((field) => !inlineKeys.has(field.key));
+    const showExtras = !!CredentialExtras && !inlineKeys.has('extras');
     const showApplicationId =
       !inlineKeys.has('applicationId') &&
       platformDef.schema.some((section) => section.key === 'applicationId');
@@ -202,14 +204,19 @@ const Body = memo<BodyProps>(
               />
               {/* Credentials of a saved bot are masked and rarely edited, so they
             fold away; a new bot has nothing else to do but fill them in. */}
-              {(groupCredentialFields.length > 0 || showApplicationId || !!CredentialExtras) && (
+              {(groupCredentialFields.length > 0 || showApplicationId || showExtras) && (
                 <Form.Group
-                  collapsible={!!hasConfig}
-                  defaultActive={!hasConfig}
+                  collapsible={!!hasConfig || inlineKeys.size > 0}
+                  defaultActive={!hasConfig && inlineKeys.size === 0}
                   desc={t('channel.group.credentialsDesc')}
-                  keyValue={`credentials-${platformDef.id}`}
-                  title={t('channel.credentials')}
                   variant={'filled'}
+                  keyValue={`credentials-${platformDef.id}`}
+                  // The steps above ask for what is needed; what is left is optional.
+                  title={t(
+                    inlineKeys.size > 0
+                      ? 'channel.group.credentialsOptional'
+                      : 'channel.credentials',
+                  )}
                 >
                   {/* Render top-level sections in schema order so each platform controls
               its own field ordering. LINE places `credentials` before `applicationId`
@@ -253,7 +260,7 @@ const Body = memo<BodyProps>(
                   {/* Platform-specific helpers (e.g. LINE's "Fetch from LINE" button)
               render after the credential + applicationId block so the button
               sits next to the field it acts on. */}
-                  {CredentialExtras && <CredentialExtras disabled={disabled} />}
+                  {showExtras && <CredentialExtras disabled={disabled} />}
                 </Form.Group>
               )}
             </>

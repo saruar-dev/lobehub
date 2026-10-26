@@ -509,6 +509,7 @@ export default {
     'Quiet time after a run before the next one may start. At least 60.',
   'channel.group.setup': 'Get started',
   'channel.group.credentialsDesc': 'Encrypted when saved, and shown masked afterwards.',
+  'channel.group.credentialsOptional': 'Optional credentials',
   'channel.quickView.title': 'Quick view',
   'channel.quickView.desc':
     'How the bot behaves in chat with the settings as they are now, before you save. Illustrative.',

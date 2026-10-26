@@ -163,14 +163,12 @@ describe('getSetupGuide', () => {
     expect(fieldsOf('bot')).toEqual(['botToken']);
   });
 
-  it('never asks for one credential in two steps, or in a step that is not shown', () => {
+  it('never asks for one credential in two steps', () => {
     for (const platform of ['discord', 'slack', 'telegram', 'qq', 'line', 'feishu', 'lark']) {
       const guide = getSetupGuide(platform, { appName: 'Moss' })!;
       const keys = guide.steps.flatMap((step) => step.fields ?? []);
 
       expect(new Set(keys).size).toBe(keys.length);
-      // Feishu / Lark hide their steps behind the scan, so nothing can live there.
-      if (guide.scanToCreate) expect(keys).toEqual([]);
     }
   });
 

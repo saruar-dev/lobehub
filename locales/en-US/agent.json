@@ -186,6 +186,7 @@
   "channel.feishu.webhookMigrationTitle": "Consider migrating to WebSocket mode",
   "channel.group.connection": "Connection options",
   "channel.group.credentialsDesc": "Encrypted when saved, and shown masked afterwards.",
+  "channel.group.credentialsOptional": "Optional credentials",
   "channel.group.setup": "Get started",
   "channel.groupAllowFrom": "Allowed Channels",
   "channel.groupAllowFromAdd": "Add channel",

@@ -26,7 +26,7 @@ export type SetupLinkLabel =
 export interface SetupStep {
   /**
    * Keys of the credential fields this step is about (`applicationId`, or a key
-   * under `credentials`). While a bot is being set up they are filled in right
+   * under `credentials`; `extras` is the platform's helper under them). While a bot is being set up they are filled in right
    * under the step; a saved bot keeps them in its credentials group instead.
    */
   fields?: string[];
@@ -70,7 +70,11 @@ export const getSetupGuide = (
         guide: 'feishu',
         scanToCreate: true,
         steps: [
-          { key: 'create', link: { href: FEISHU_CONSOLE_URL[platformId], label: 'openConsole' } },
+          {
+            key: 'create',
+            fields: ['applicationId', 'appSecret'],
+            link: { href: FEISHU_CONSOLE_URL[platformId], label: 'openConsole' },
+          },
           { key: 'bot' },
           { key: 'events' },
           { key: 'publish' },
@@ -155,7 +159,13 @@ export const getSetupGuide = (
             key: 'messagingApi',
             link: { href: LINE_ACCOUNT_MANAGER_URL, label: 'openLineAccountManager' },
           },
-          { key: 'credentials', link: { href: LINE_CONSOLE_URL, label: 'openConsole' } },
+          {
+            key: 'credentials',
+            // `extras` is the platform's helper button ("Fetch from LINE"), which fills the
+            // destination user ID from the access token, so it follows the fields it needs.
+            fields: ['channelAccessToken', 'channelSecret', 'applicationId', 'extras'],
+            link: { href: LINE_CONSOLE_URL, label: 'openConsole' },
+          },
           { key: 'webhook' },
         ],
       };

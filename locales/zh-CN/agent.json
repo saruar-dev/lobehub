@@ -186,6 +186,7 @@
   "channel.feishu.webhookMigrationTitle": "建议迁移到 WebSocket 模式",
   "channel.group.connection": "连接选项",
   "channel.group.credentialsDesc": "凭证加密保存，保存后只显示打码的值。",
+  "channel.group.credentialsOptional": "可选凭证",
   "channel.group.setup": "开始接入",
   "channel.groupAllowFrom": "允许的频道",
   "channel.groupAllowFromAdd": "添加频道",
