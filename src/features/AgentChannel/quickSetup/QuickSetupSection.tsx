@@ -23,9 +23,13 @@ interface QuickSetupSectionProps {
     applicationId: string;
     credentials: Record<string, string>;
   }) => Promise<boolean> | void;
+  /** Saves and connects the bot from inside the steps; only offered while setting one up. */
+  onSave?: () => void;
   platformId: string;
   /** Input for a credential field, shown under the step that asks for it. */
   renderField?: (key: string) => ReactNode;
+  /** A save is running. */
+  saving?: boolean;
   /** Who the created app is for (the agent id); a new scope starts a new scan. */
   scope?: string;
 }
@@ -37,7 +41,18 @@ interface QuickSetupSectionProps {
  * nothing left to set up, so the section folds away for it.
  */
 const QuickSetupSection = memo<QuickSetupSectionProps>(
-  ({ appName, disabled, form, hasConfig, onAuthenticated, platformId, renderField, scope }) => {
+  ({
+    appName,
+    disabled,
+    form,
+    hasConfig,
+    onAuthenticated,
+    onSave,
+    platformId,
+    renderField,
+    saving,
+    scope,
+  }) => {
     const { t } = useTranslation('agent');
     const applicationId = useWatch(form, (values) => values?.applicationId as string | undefined);
     const guide = useMemo(
@@ -91,7 +106,32 @@ const QuickSetupSection = memo<QuickSetupSectionProps>(
             </Button>
           </Flexbox>
         )}
-        {showSteps && <SetupGuide guide={guide} renderField={renderField} />}
+        {showSteps && (
+          <SetupGuide
+            guide={guide}
+            renderField={renderField}
+            connectStep={
+              onSave && !hasConfig
+                ? {
+                    action: (
+                      <Button
+                        disabled={disabled}
+                        loading={saving}
+                        size={'small'}
+                        style={{ flexShrink: 0 }}
+                        type={'primary'}
+                        onClick={onSave}
+                      >
+                        {t('channel.saveAndConnect')}
+                      </Button>
+                    ),
+                    desc: t('channel.quickSetup.connect.desc'),
+                    title: t('channel.quickSetup.connect.title'),
+                  }
+                : undefined
+            }
+          />
+        )}
       </Form.Group>
     );
   },

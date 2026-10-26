@@ -33,11 +33,13 @@ export interface SettingsGroup {
 }
 
 /**
- * Who the bot talks to, in the order a person decides it: who you are, then DMs
+ * Who the bot talks to, in the order a person decides it: who you are and which
+ * server is yours, then DMs
  * (and the list they lean on), then groups.
  */
 const ACCESS_KEYS = [
   'userId',
+  'serverId',
   'dmPolicy',
   'allowFrom',
   'guestPolicy',
@@ -51,8 +53,8 @@ export const REPLY_KEYS = ['displayToolCalls', 'showUsageStats', 'reactionMode',
 /** When the bot may speak up without being addressed: the bot-wake options all share this prefix. */
 const WAKE_KEY_PREFIX = 'botWake';
 
-/** How the bot reaches the platform: which server it acts on and how events arrive. */
-const CONNECT_KEYS = ['serverId', 'connectionMode'];
+/** How the bot reaches the platform: how events arrive. */
+const CONNECT_KEYS = ['connectionMode'];
 
 /**
  * Split a platform's flat settings fields into the sections the page shows (one per tab).

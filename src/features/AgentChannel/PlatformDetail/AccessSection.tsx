@@ -102,6 +102,7 @@ export const AccessSection = memo<AccessSectionProps>(
     }));
 
     const userId = byKey.get('userId');
+    const serverId = byKey.get('serverId');
     const allowFrom = byKey.get('allowFrom');
     const guestPolicy = byKey.get('guestPolicy');
     const groupAllowFrom = byKey.get('groupAllowFrom');
@@ -139,6 +140,10 @@ export const AccessSection = memo<AccessSectionProps>(
           />
         )}
         {userIdExtras}
+        {/* Your server sits with your own ID: both say what is yours, not who may talk. */}
+        {serverId && (
+          <SchemaField divider disabled={disabled} field={serverId} parentKey="settings" />
+        )}
 
         {byKey.has('dmPolicy') && (
           <Form.Field divider label={t('channel.access.dm.label')} layout="vertical">

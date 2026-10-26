@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getInlineFieldKeys, getSetupGuide } from './guides';
+import { connectStepIndex, getInlineFieldKeys, getSetupGuide } from './guides';
 import {
   buildDiscordInviteUrl,
   buildSlackCreateAppUrl,
@@ -175,5 +175,17 @@ describe('getSetupGuide', () => {
   it('lists the inline credentials per platform, and none for a platform without a guide', () => {
     expect([...getInlineFieldKeys('telegram')]).toEqual(['botToken']);
     expect(getInlineFieldKeys('wechat').size).toBe(0);
+  });
+
+  it('asks to save right after the last step with a credential, before what needs a running bot', () => {
+    const at = (platform: string) => {
+      const steps = getSetupGuide(platform, { appName: 'Moss' })!.steps;
+      return steps.map((step) => step.key).toSpliced(connectStepIndex(steps), 0, 'connect');
+    };
+
+    expect(at('discord')).toEqual(['create', 'credentials', 'bot', 'connect', 'invite']);
+    expect(at('telegram')).toEqual(['botfather', 'token', 'connect', 'privacy']);
+    expect(at('line')).toEqual(['account', 'messagingApi', 'credentials', 'connect', 'webhook']);
+    expect(connectStepIndex([{ key: 'only' }])).toBe(1);
   });
 });

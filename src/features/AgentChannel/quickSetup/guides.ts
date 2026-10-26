@@ -184,3 +184,13 @@ export const getInlineFieldKeys = (platformId: string): Set<string> =>
   new Set(
     (getSetupGuide(platformId, { appName: '' })?.steps ?? []).flatMap((step) => step.fields ?? []),
   );
+
+/**
+ * Where the "save and connect" step goes: right after the last step that asks for a credential,
+ * since everything after it (inviting the bot, turning on a webhook, subscribing to events) needs
+ * the bot to be saved and running. A guide whose steps ask for nothing gets it at the end.
+ */
+export const connectStepIndex = (steps: SetupStep[]): number => {
+  const last = steps.findLastIndex((step) => (step.fields?.length ?? 0) > 0);
+  return last === -1 ? steps.length : last + 1;
+};

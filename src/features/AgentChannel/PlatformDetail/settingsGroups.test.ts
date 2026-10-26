@@ -24,8 +24,7 @@ describe('groupSettingsFields', () => {
     );
 
     expect(groups.map((g) => [g.key, g.fields.map((f) => f.key)])).toEqual([
-      ['connect', ['serverId']],
-      ['access', ['userId', 'dmPolicy', 'allowFrom', 'groupPolicy']],
+      ['access', ['userId', 'serverId', 'dmPolicy', 'allowFrom', 'groupPolicy']],
       ['reply', ['displayToolCalls', 'reactionMode', 'watchKeywords']],
       ['advanced', ['charLimit', 'historyLimit']],
     ]);
@@ -40,12 +39,17 @@ describe('groupSettingsFields', () => {
     ]);
   });
 
-  it('puts how the bot reaches the platform with the connection, not with the technical limits', () => {
-    const groups = groupSettingsFields(['charLimit', 'connectionMode', 'serverId'].map(field));
+  it('puts how the bot reaches the platform with the connection, and your server with your own ID', () => {
+    const groups = groupSettingsFields(
+      ['charLimit', 'connectionMode', 'serverId', 'userId'].map(field),
+    );
 
     expect(groups.find((g) => g.key === 'connect')?.fields.map((f) => f.key)).toEqual([
-      'serverId',
       'connectionMode',
+    ]);
+    expect(groups.find((g) => g.key === 'access')?.fields.map((f) => f.key)).toEqual([
+      'userId',
+      'serverId',
     ]);
     expect(groups.find((g) => g.key === 'advanced')?.fields.map((f) => f.key)).toEqual([
       'charLimit',

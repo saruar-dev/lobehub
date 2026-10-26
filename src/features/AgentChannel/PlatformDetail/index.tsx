@@ -805,7 +805,9 @@ const PlatformDetail = memo<PlatformDetailProps>(
                   platformDef={platformDef}
                   quickSetupAppName={agentName}
                   quickSetupScope={agentId}
+                  saving={saving}
                   onAuthenticated={handleExternalAuth}
+                  onSave={handleSave}
                   onValuesChange={handleFormValuesChange}
                 />
                 <FooterActions

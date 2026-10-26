@@ -63,12 +63,16 @@ interface BodyProps {
     applicationId: string;
     credentials: Record<string, string>;
   }) => Promise<boolean> | void;
+  /** Saves and connects the bot; offered as a step of its own while setting one up. */
+  onSave?: () => void;
   onValuesChange?: (values: ChannelFormValues) => void;
   platformDef: SerializedPlatformDefinition;
   /** Name a quick-created bot app starts with (the agent's name). */
   quickSetupAppName?: string;
   /** Who a quick-created bot app is for (the agent id); a new scope starts a new scan. */
   quickSetupScope?: string;
+  /** A save is running. */
+  saving?: boolean;
 }
 
 const Body = memo<BodyProps>(
@@ -79,9 +83,11 @@ const Body = memo<BodyProps>(
     hasConfig,
     currentConfig,
     onAuthenticated,
+    onSave,
     onValuesChange,
     disabled,
     quickSetupAppName,
+    saving,
     quickSetupScope,
   }) => {
     const { t: _t } = useTranslation('agent');
@@ -199,8 +205,10 @@ const Body = memo<BodyProps>(
                 hasConfig={hasConfig}
                 platformId={platformDef.id}
                 renderField={inlineKeys.size > 0 ? renderStepField : undefined}
+                saving={saving}
                 scope={quickSetupScope}
                 onAuthenticated={onAuthenticated}
+                onSave={onSave}
               />
               {/* Credentials of a saved bot are masked and rarely edited, so they
             fold away; a new bot has nothing else to do but fill them in. */}

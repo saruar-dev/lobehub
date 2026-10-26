@@ -1,5 +1,8 @@
 export default {
   'channel.quickSetup.needsApplicationId': 'Fill in the Application ID to get this link.',
+  'channel.quickSetup.connect.title': 'Save and connect',
+  'channel.quickSetup.connect.desc':
+    'Saves what you filled in above and brings the bot online. Everything else can be changed later.',
   'channel.quickSetup.link.createSlackApp': 'Create Slack app',
   'channel.quickSetup.link.inviteBot': 'Invite bot to server',
   'channel.quickSetup.link.openBotFather': 'Open BotFather',
@@ -210,7 +213,7 @@ export default {
   'channel.feishu.description': 'Connect this agent to Feishu for private and group chats.',
   'channel.feishu.webhookMigrationTitle': 'Consider migrating to WebSocket mode',
   'channel.feishu.webhookMigrationDesc':
-    'WebSocket mode provides real-time event delivery without needing a public callback URL. To migrate, switch the Connection Mode to WebSocket in Advanced Settings. No additional configuration is needed on the Feishu/Lark Open Platform.',
+    'WebSocket mode provides real-time event delivery without needing a public callback URL. To migrate, switch the Connection Mode to WebSocket under Connection options on the Connect tab. No additional configuration is needed on the Feishu/Lark Open Platform.',
   'channel.imessage.description':
     'Connect this agent to iMessage through the local LobeHub Desktop BlueBubbles bridge.',
   'channel.imessage.applicationIdHint':
@@ -296,7 +299,7 @@ export default {
   'channel.qq.description': 'Connect this agent to QQ for group chats and direct messages.',
   'channel.qq.webhookMigrationTitle': 'Consider migrating to WebSocket mode',
   'channel.qq.webhookMigrationDesc':
-    'WebSocket mode provides real-time event delivery and automatic reconnection without needing a callback URL. To migrate, create a new bot on QQ Open Platform without configuring a callback URL, then switch the Connection Mode to WebSocket in Advanced Settings.',
+    'WebSocket mode provides real-time event delivery and automatic reconnection without needing a callback URL. To migrate, create a new bot on QQ Open Platform without configuring a callback URL, then switch the Connection Mode to WebSocket under Connection options on the Connect tab.',
   'channel.wechat.description':
     'Connect this agent to WeChat via iLink Bot for private and group chats.',
   'channel.wechatQrExpired': 'QR code expired. Please refresh to get a new one.',
@@ -339,7 +342,7 @@ export default {
     'Connect this agent to Slack for channel conversations and direct messages.',
   'channel.slack.webhookMigrationTitle': 'Consider migrating to Socket Mode (WebSocket)',
   'channel.slack.webhookMigrationDesc':
-    'Socket Mode provides real-time event delivery via WebSocket without exposing a public HTTP endpoint. To migrate, enable Socket Mode in your Slack app settings, generate an App-Level Token, then switch the Connection Mode to WebSocket in Advanced Settings.',
+    'Socket Mode provides real-time event delivery via WebSocket without exposing a public HTTP endpoint. To migrate, enable Socket Mode in your Slack app settings, generate an App-Level Token, then switch the Connection Mode to WebSocket under Connection options on the Connect tab.',
   'channel.secretTokenHint':
     'Used to verify webhook requests from Telegram. Leave blank and LobeHub derives one for this bot — verification is always on.',
   'channel.secretTokenPlaceholder': 'Leave blank to auto-generate',
@@ -610,7 +613,8 @@ export default {
   'channel.historyLimit': 'History Message Limit',
   'channel.historyLimitHint': 'Default number of messages to fetch when reading channel history',
   'channel.serverId': 'Default Server ID',
-  'channel.serverIdHint': 'Default server / guild AI tools act on; not used for access control',
+  'channel.serverIdHint':
+    'When the bot uses its tools (looking up channels, reading or sending messages) without being told which server, it works in this one. It does not decide where the bot replies.',
   'channel.serverIdHint.discord':
     'Enable Developer Mode (Settings → Advanced), then right-click the server icon → Copy Server ID.',
   'channel.serverIdHint.slack':
@@ -619,7 +623,7 @@ export default {
   'channel.userIdHint':
     'Lets AI tools reach you proactively (e.g. reminders); auto-trusted by the global allowlist',
   'channel.userIdMissingDesc':
-    "Without it, AI tools can't reach you with reminders, and pairing approvals will fail. Send /whoami to the bot to get your ID, then fill it in under Advanced Settings.",
+    "Without it, AI tools can't reach you with reminders, and pairing approvals will fail. Send /whoami to the bot to get your ID, then fill it in on the Access tab.",
   'channel.userIdMissingTitle': 'Add your platform User ID',
   'channel.userIdHint.discord':
     'Enable Developer Mode (Settings → Advanced), then right-click your avatar → Copy User ID.',
