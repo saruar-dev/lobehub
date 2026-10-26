@@ -51,11 +51,11 @@ import { useNarrowLayout } from './useNarrowLayout';
 const styles = createStaticStyles(({ css, cssVar }) => ({
   content: css`
     display: flex;
+    flex: 1;
     flex-direction: column;
     align-items: center;
 
     width: 100%;
-    padding-block: 16px 24px;
     padding-inline: 24px;
   `,
   // The page is one split from the top: the bot's header, tabs and form on the
@@ -65,11 +65,11 @@ const styles = createStaticStyles(({ css, cssVar }) => ({
   layout: css`
     display: grid;
     grid-template-columns: minmax(0, 1fr) 360px;
+    flex: 1;
     gap: 0;
     align-items: stretch;
 
     width: 100%;
-    max-width: 1200px;
 
     &[data-preview='closed'],
     &[data-narrow='true'] {
@@ -84,6 +84,7 @@ const styles = createStaticStyles(({ css, cssVar }) => ({
     align-items: center;
 
     min-width: 0;
+    padding-block: 16px 24px;
     padding-inline-end: 32px;
 
     &[data-preview='closed'],
@@ -108,14 +109,14 @@ const styles = createStaticStyles(({ css, cssVar }) => ({
   `,
   quickViewSticky: css`
     position: sticky;
-    inset-block-start: 16px;
-    padding-block-start: 8px;
+    inset-block-start: 0;
+    padding-block-start: 24px;
   `,
   main: css`
     position: relative;
 
     display: flex;
-    flex: none;
+    flex: 1 0 auto;
     flex-direction: column;
 
     width: 100%;
