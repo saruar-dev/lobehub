@@ -1,7 +1,7 @@
 'use client';
 
 import { Alert, Button, confirmModal, createStaticStyles, Flexbox, toast } from '@lobehub/ui';
-import { useForm } from '@lobehub/ui/form';
+import { useForm, useWatch } from '@lobehub/ui/form';
 import { ExternalLink } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -18,7 +18,10 @@ import { BOT_RUNTIME_STATUSES, type BotRuntimeStatusSnapshot } from '@/types/bot
 
 import { keepPendingConnectResult, toTestResult } from './actionResults';
 import Body from './Body';
-import Footer from './Footer';
+import { ChannelHero } from './ChannelHero';
+import { ChannelTabBar } from './ChannelTabBar';
+import { type ChannelTab, defaultTab, resolveTabs, tabsWithIssues } from './channelTabs';
+import { FooterActions, FooterNotices } from './Footer';
 import {
   findOverLimitSettings,
   getChannelFormValues,
@@ -27,6 +30,9 @@ import {
   shouldAdoptIncomingConfig,
 } from './formState';
 import { type ChannelPostSave, ChannelPostSaveContext } from './postSaveContext';
+import { QuickView } from './QuickView';
+import { hasPendingChanges, pickKeys, replyDiffers } from './replySettings';
+import { getSchemaFields, groupSettingsFields, REPLY_KEYS } from './settingsGroups';
 
 const styles = createStaticStyles(({ css, cssVar }) => ({
   content: css`
@@ -37,6 +43,54 @@ const styles = createStaticStyles(({ css, cssVar }) => ({
     width: 100%;
     padding-block: 16px 24px;
     padding-inline: 24px;
+  `,
+  hero: css`
+    width: 100%;
+    max-width: 1200px;
+    padding-block-end: 16px;
+  `,
+  // Settings on the left, the quick view fixed beside them. Below this width
+  // there is no room for two columns, so the quick view leads the page.
+  layout: css`
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 24px;
+    align-items: start;
+
+    width: 100%;
+    max-width: 1200px;
+
+    @media (width <= 1100px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  `,
+  primary: css`
+    display: flex;
+    grid-column: 1;
+    grid-row: 1;
+    flex-direction: column;
+    align-items: center;
+
+    min-width: 0;
+
+    @media (width <= 1100px) {
+      grid-row: 2;
+    }
+  `,
+  quickView: css`
+    position: sticky;
+    inset-block-start: 16px;
+
+    grid-column: 2;
+    grid-row: 1;
+
+    margin-block-start: 8px;
+
+    @media (width <= 1100px) {
+      position: static;
+      grid-column: 1;
+      grid-row: 1;
+    }
   `,
   main: css`
     position: relative;
@@ -104,12 +158,62 @@ const PlatformDetail = memo<PlatformDetailProps>(
     const { t } = useTranslation('agent');
     const navigate = useWorkspaceAwareNavigate();
     const agentName = useAgentStore((s) => agentSelectors.getAgentMetaById(agentId)(s).title);
+    const agentAvatar = useAgentStore((s) => agentSelectors.getAgentMetaById(agentId)(s).avatar);
+    const agentBackground = useAgentStore(
+      (s) => agentSelectors.getAgentMetaById(agentId)(s).backgroundColor,
+    );
+
+    // What is stored, in form shape. The reply settings are compared against it
+    // to decide what to save on the spot, everything else to decide what still
+    // waits for the Save button.
+    const storedValues = useMemo(
+      () => getFormValues(platformDef.schema, currentConfig),
+      [platformDef.schema, currentConfig],
+    );
+    const storedRef = useRef(storedValues);
+    useEffect(() => {
+      storedRef.current = storedValues;
+    }, [storedValues]);
+    const replyKeys = useMemo(
+      () =>
+        REPLY_KEYS.filter((key) =>
+          getSchemaFields(platformDef.schema, 'settings').some((field) => field.key === key),
+        ),
+      [platformDef.schema],
+    );
+    const valuesChangedRef = useRef<() => void>(undefined);
+    const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+    const autoSavingRef = useRef(false);
 
     const [isDirty, setIsDirty] = useState(false);
     const form = useForm<ChannelFormValues>({
       initialValues: getFormValues(platformDef.schema, currentConfig),
-      onValuesChange: () => setIsDirty(true),
+      onValuesChange: () => valuesChangedRef.current?.(),
     });
+
+    // Which tab is open. `undefined` means nobody picked one, so the page picks:
+    // connecting for a new channel, the first settings tab once it is saved.
+    const [pickedTab, setPickedTab] = useState<ChannelTab>();
+    const tabs = useMemo(
+      () =>
+        resolveTabs(
+          groupSettingsFields(getSchemaFields(platformDef.schema, 'settings')).map(
+            (group) => group.key,
+          ),
+        ),
+      [platformDef.schema],
+    );
+    const activeTab =
+      pickedTab && tabs.includes(pickedTab) ? pickedTab : defaultTab(tabs, !!currentConfig);
+    const watchedValues = useWatch(form, (values) => values);
+    // The open tab already shows its own problems; the dot is for the others.
+    const tabIssues = useMemo(
+      () =>
+        watchedValues
+          ? tabsWithIssues(watchedValues, platformDef.schema).filter((tab) => tab !== activeTab)
+          : [],
+      [activeTab, platformDef.schema, watchedValues],
+    );
     const { allowed: canEdit } = usePermission('edit_own_content');
     const activeWorkspaceId = useActiveWorkspaceId();
     const readOnly = disabled || !canEdit;
@@ -245,6 +349,7 @@ const PlatformDetail = memo<PlatformDetailProps>(
     // runtimeStatus — otherwise background status refreshes would wipe
     // in-progress form edits and cancel the connect-status polling loop.
     useEffect(() => {
+      setPickedTab(undefined);
       setSaveResult(undefined);
       setConnectNotice(undefined);
       setRuntimeHidden(false);
@@ -264,17 +369,98 @@ const PlatformDetail = memo<PlatformDetailProps>(
       previousConfigRef.current = currentConfig;
 
       if (!shouldAdoptIncomingConfig(previous, currentConfig, isDirty)) return;
+      // A reply setting is being saved: the copy coming back may not have this
+      // person's latest toggle yet, and adopting it would flip the toggle back.
+      if (autoSavingRef.current) return;
 
       form.reset(getFormValues(platformDef.schema, currentConfig));
       setIsDirty(false);
     }, [currentConfig, form, platformDef.schema, isDirty]);
+
+    // Reply settings are switches and choices whose effect is seen at once in
+    // the chat, so they are stored as soon as they change instead of waiting for
+    // the Save button. Only the reply keys are written, on top of what is stored:
+    // a half-finished edit on another tab is neither saved nor lost.
+    const saveReplySettings = useCallback(async () => {
+      if (!currentConfig || writeDisabled || replyKeys.length === 0) return;
+      if (autoSavingRef.current) return;
+
+      const { valid } = await form.validate(replyKeys.map((key) => `settings.${key}` as const));
+      if (!valid) return;
+
+      const values = form.getValues();
+      const stored = storedRef.current;
+      if (!replyDiffers(values.settings, stored.settings, replyKeys)) return;
+
+      autoSavingRef.current = true;
+      try {
+        const settings = mergeSettingsWithDefaults(
+          platformDef.schema,
+          omitUndefinedValues({ ...stored.settings, ...pickKeys(values.settings, replyKeys) }),
+        );
+        await updateBotProvider(currentConfig.id, agentId, { settings });
+        storedRef.current = { ...stored, settings: settings as ChannelFormValues['settings'] };
+        toast.success(t('channel.saved'));
+      } catch {
+        toast.error(t('channel.updateFailed'));
+        form.setValues({
+          settings: {
+            ...form.getValues().settings,
+            ...(pickKeys(stored.settings, replyKeys) as ChannelFormValues['settings']),
+          },
+        });
+      } finally {
+        autoSavingRef.current = false;
+        // Anything toggled while this save was running still has to go out.
+        valuesChangedRef.current?.();
+      }
+    }, [
+      agentId,
+      currentConfig,
+      form,
+      platformDef.schema,
+      replyKeys,
+      t,
+      updateBotProvider,
+      writeDisabled,
+    ]);
+
+    const handleValuesChange = useCallback(() => {
+      const values = form.getValues();
+      setIsDirty(hasPendingChanges(values, storedRef.current, replyKeys));
+
+      if (!currentConfig || writeDisabled || replyKeys.length === 0) return;
+      if (!replyDiffers(values.settings, storedRef.current.settings, replyKeys)) return;
+
+      clearTimeout(autoSaveTimerRef.current);
+      autoSaveTimerRef.current = setTimeout(() => void saveReplySettings(), 400);
+    }, [currentConfig, form, replyKeys, saveReplySettings, writeDisabled]);
+    useEffect(() => {
+      valuesChangedRef.current = handleValuesChange;
+    }, [handleValuesChange]);
+    useEffect(() => () => clearTimeout(autoSaveTimerRef.current), []);
 
     const handleSave = useCallback(async () => {
       if (writeDisabled) return;
 
       try {
         const { valid } = await form.validate();
-        if (!valid) return;
+        if (!valid) {
+          // The invalid field may be on a tab that is not open. Open the first tab
+          // that has one, from the field the form marked, else from what is missing.
+          const marked = document
+            .querySelector('[role="tabpanel"][id^="channel-panel-"] [data-invalid]')
+            ?.closest('[role="tabpanel"]')
+            ?.id.replace('channel-panel-', '') as ChannelTab | undefined;
+          const target =
+            marked && tabs.includes(marked)
+              ? marked
+              : tabsWithIssues(form.getValues(), platformDef.schema).find((tab) =>
+                  tabs.includes(tab),
+                );
+          if (target) setPickedTab(target);
+          return;
+        }
         const values = form.getValues();
 
         setSaving(true);
@@ -358,6 +544,7 @@ const PlatformDetail = memo<PlatformDetailProps>(
       createBotProvider,
       updateBotProvider,
       connectCurrentBot,
+      tabs,
       writeDisabled,
       t,
     ]);
@@ -489,7 +676,7 @@ const PlatformDetail = memo<PlatformDetailProps>(
       setTestResult(undefined);
     }, [currentConfig, form, platformDef.schema]);
 
-    const handleFormValuesChange = useCallback(() => setIsDirty(true), []);
+    const handleFormValuesChange = handleValuesChange;
 
     const handlePaidFeatureUpgrade = useCallback(() => {
       navigate('/settings/plans');
@@ -526,37 +713,68 @@ const PlatformDetail = memo<PlatformDetailProps>(
                 }
               />
             )}
-            <Body
-              currentConfig={currentConfig}
-              disabled={writeDisabled}
-              form={form}
-              hasConfig={!!currentConfig}
-              platformDef={platformDef}
-              quickSetupAppName={agentName}
-              quickSetupScope={agentId}
-              onAuthenticated={handleExternalAuth}
-              onValuesChange={handleFormValuesChange}
-            />
-            <Footer
-              connectResult={connectResult}
-              connecting={connecting}
-              currentConfig={currentConfig}
-              disabled={readOnly}
-              form={form}
-              hasConfig={!!currentConfig}
-              isDirty={isDirty}
-              platformDef={platformDef}
-              saveResult={saveResult}
-              saving={saving}
-              testResult={testResult}
-              testing={testing}
-              writeDisabled={writeDisabled}
-              onCopied={() => toast.success(t('channel.copied'))}
-              onDelete={handleDelete}
-              onDiscard={handleDiscard}
-              onSave={handleSave}
-              onTestConnection={handleTestConnection}
-            />
+            <div className={styles.hero}>
+              <ChannelHero
+                applicationId={currentConfig?.applicationId}
+                botName={agentName}
+                platformDef={platformDef}
+              />
+            </div>
+            <div className={styles.layout}>
+              <div className={styles.quickView}>
+                <QuickView
+                  botAvatar={{ avatar: agentAvatar, background: agentBackground }}
+                  botName={agentName}
+                  form={form}
+                  platformDef={platformDef}
+                />
+              </div>
+              <div className={styles.primary}>
+                <ChannelTabBar
+                  active={activeTab}
+                  issues={tabIssues}
+                  tabs={tabs}
+                  onChange={setPickedTab}
+                />
+                <FooterNotices
+                  connectResult={connectResult}
+                  currentConfig={currentConfig}
+                  form={form}
+                  hasConfig={!!currentConfig}
+                  platformDef={platformDef}
+                  saveResult={saveResult}
+                  testResult={testResult}
+                />
+                <Body
+                  activeTab={activeTab}
+                  currentConfig={currentConfig}
+                  disabled={writeDisabled}
+                  form={form}
+                  hasConfig={!!currentConfig}
+                  platformDef={platformDef}
+                  quickSetupAppName={agentName}
+                  quickSetupScope={agentId}
+                  onAuthenticated={handleExternalAuth}
+                  onValuesChange={handleFormValuesChange}
+                />
+                <FooterActions
+                  connecting={connecting}
+                  disabled={readOnly}
+                  form={form}
+                  hasConfig={!!currentConfig}
+                  isDirty={isDirty}
+                  platformDef={platformDef}
+                  saving={saving}
+                  testing={testing}
+                  writeDisabled={writeDisabled}
+                  onCopied={() => toast.success(t('channel.copied'))}
+                  onDelete={handleDelete}
+                  onDiscard={handleDiscard}
+                  onSave={handleSave}
+                  onTestConnection={handleTestConnection}
+                />
+              </div>
+            </div>
           </div>
         </main>
       </ChannelPostSaveContext>

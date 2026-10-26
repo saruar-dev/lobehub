@@ -507,6 +507,81 @@ export default {
   'channel.botWakeCooldownSeconds': 'Cool down (seconds)',
   'channel.botWakeCooldownSecondsHint':
     'Quiet time after a run before the next one may start. At least 60.',
+  'channel.group.setup': 'Get started',
+  'channel.group.credentialsDesc': 'Encrypted when saved, and shown masked afterwards.',
+  'channel.quickView.title': 'Quick view',
+  'channel.quickView.desc':
+    'How the bot behaves in chat with the settings as they are now, before you save. Illustrative.',
+  'channel.quickView.sceneGroup': 'Group',
+  'channel.quickView.sceneDm': 'Direct message',
+  'channel.quickView.stranger': 'Someone new',
+  'channel.quickView.bot': 'Bot',
+  'channel.quickView.ask': "Summarize today's discussion",
+  'channel.quickView.askDm': "Can you summarize today's discussion?",
+  'channel.quickView.answer':
+    'Three things came up today: the release moved to Thursday, the sign-in page copy, and the priority of the bug list. Want me to turn them into to-dos?',
+  'channel.quickView.toolCall': 'Read 12 earlier messages',
+  'channel.quickView.dm.pairing':
+    "To DM this bot, send this pairing code to the bot's owner: 7K2F. They run /approve 7K2F to grant you access. The code expires in 1 hour.",
+  'channel.quickView.dm.allowlist':
+    "Sorry, you aren't authorized to send direct messages to this bot. Please contact the bot's owner if you need access.",
+  'channel.quickView.dm.disabled':
+    "This bot isn't accepting direct messages. Please reach out by mentioning it in a shared channel or group instead.",
+  'channel.quickView.group.disabled':
+    "This bot doesn't respond in groups or channels. Please reach out via direct message instead.",
+  'channel.quickView.group.allowlist':
+    "This bot isn't enabled in this channel. Please contact the bot's owner if you need access.",
+  'channel.quickView.sender.rejected':
+    "Sorry, you aren't authorized to interact with this bot. Please contact the bot's owner if you need access.",
+  'channel.quickView.groupAllowlist': 'Replies only in the groups on your list.',
+  'channel.quickView.keywords': 'Also wakes on {{keywords}} without an @mention.',
+  'channel.saveAndConnect': 'Save and connect',
+  'channel.access.recommended': 'Recommended',
+  'channel.access.dm.label': 'Who can message it directly',
+  'channel.access.dm.everyone': 'Everyone',
+  'channel.access.dm.everyoneDesc': 'Anyone can message it directly.',
+  'channel.access.dm.approval': 'Strangers need my approval',
+  'channel.access.dm.approvalDesc':
+    'A stranger gets a pairing code, and you run /approve to let them in.',
+  'channel.access.dm.listed': 'Only people on the list',
+  'channel.access.dm.listedDesc': 'Only listed people can use it; everyone else is turned away.',
+  'channel.access.dm.closed': 'No direct messages',
+  'channel.access.dm.closedDesc': 'It ignores DMs and points people to a shared group instead.',
+  'channel.access.list.approved': 'Approved people',
+  'channel.access.list.listed': 'People on the list',
+  'channel.access.list.hint':
+    'The list applies everywhere: only these people can use the bot, in DMs and in groups.',
+  'channel.access.list.emptyApproval': 'No one is approved yet. Strangers get a pairing code.',
+  'channel.access.list.emptyListed':
+    'The list is empty, so apart from you nobody can message it yet.',
+  'channel.access.list.clearTitle': 'Clear the list?',
+  'channel.access.list.clearContent':
+    'Switching to Everyone also removes the {{count}} people on the list, since a filled list limits everyone.',
+  'channel.access.list.clearOk': 'Switch and clear',
+  'channel.access.group.label': 'How it responds in groups and channels',
+  'channel.access.group.open': 'Every group and channel',
+  'channel.access.group.openDesc': 'Replies whenever it is @mentioned.',
+  'channel.access.group.allowlist': 'Only chosen groups',
+  'channel.access.group.allowlistDesc': 'Replies only in the groups you list below.',
+  'channel.access.group.disabled': 'Not in groups',
+  'channel.access.group.disabledDesc': 'It ignores group messages and points people to a DM.',
+  'channel.access.group.listNote':
+    'The people list above also applies here: only people on it can use the bot in groups.',
+  'channel.access.identity.desc':
+    'Lets the bot reach you with reminders and notices, and makes you the one who approves strangers. The settings below never block you.',
+  'channel.access.identity.required': 'Required to approve strangers',
+  'channel.access.identity.approverMissing':
+    'To approve strangers, add your own ID first, or nobody can run /approve.',
+  'channel.hero.title': '{{name}} bot',
+  'channel.hero.connected': '{{agent}} · app ID {{id}}',
+  'channel.hero.new': 'Once connected, {{agent}} can work in {{name}}.',
+  'channel.tab.connect': 'Connect',
+  'channel.tab.access': 'Access',
+  'channel.tab.reply': 'Replies',
+  'channel.tab.advanced': 'Advanced',
+  'channel.group.connection': 'Connection options',
+  'channel.reply.instant':
+    'Changes here take effect as soon as you make them. There is nothing to save.',
   'channel.settings': 'Advanced Settings',
   'channel.settingsResetConfirm': 'Are you sure you want to reset advanced settings to default?',
   'channel.settingsResetDefault': 'Reset to Default',

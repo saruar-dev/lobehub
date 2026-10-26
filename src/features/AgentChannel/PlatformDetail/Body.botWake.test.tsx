@@ -69,6 +69,7 @@ const Harness = ({ settings }: { settings?: Record<string, unknown> }) => {
 
   return (
     <Body
+      activeTab="advanced"
       hasConfig
       currentConfig={{ applicationId: '1', credentials: {}, settings: saved }}
       form={form}
@@ -114,7 +115,7 @@ describe('channel settings form: bot-wake options', () => {
     expect(screen.queryByText(en['channel.botWakeClassifierMode'])).not.toBeInTheDocument();
     expect(screen.queryByText(en['channel.botWakeSchedulerMode'])).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('switch', { name: en['channel.botWakeEnabled'] }));
+    fireEvent.click(screen.getByRole('switch', { name: new RegExp(`^${en['channel.botWakeEnabled']}`) }));
 
     await waitFor(() => expect(screen.getByText(en['channel.botWakeMode'])).toBeInTheDocument());
     expect(screen.getByText(en['channel.botWakeScope'])).toBeInTheDocument();

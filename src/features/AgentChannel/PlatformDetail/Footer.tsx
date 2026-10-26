@@ -26,6 +26,18 @@ const styles = createStaticStyles(({ css, cssVar }) => ({
     width: 100%;
     max-width: 1024px;
   `,
+  notices: css`
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    width: 100%;
+    max-width: 1024px;
+
+    &:not(:empty) {
+      margin-block-start: 8px;
+    }
+  `,
   resultDetail: css`
     font-family: monospace;
     font-size: 12px;
@@ -74,53 +86,26 @@ const ResultDetail = memo<{ detail?: string; hint: string }>(({ detail, hint }) 
 
 ResultDetail.displayName = 'ResultDetail';
 
-interface FooterProps {
-  connecting: boolean;
+interface FooterNoticesProps {
   connectResult?: TestResult;
   currentConfig?: CurrentConfig;
-  disabled?: boolean;
   form: FormInstance<ChannelFormValues>;
   hasConfig: boolean;
-  isDirty: boolean;
-  onCopied: () => void;
-  onDelete: () => void;
-  onDiscard: () => void;
-  onSave: () => void;
-  onTestConnection: () => void;
   platformDef: SerializedPlatformDefinition;
   saveResult?: TestResult;
-  saving: boolean;
-  testing: boolean;
   testResult?: TestResult;
-  writeDisabled?: boolean;
 }
 
-const Footer = memo<FooterProps>(
-  ({
-    platformDef,
-    currentConfig,
-    form,
-    hasConfig,
-    isDirty,
-    connectResult,
-    connecting,
-    disabled,
-    saveResult,
-    saving,
-    testing,
-    testResult,
-    writeDisabled,
-    onSave,
-    onDelete,
-    onDiscard,
-    onTestConnection,
-    onCopied,
-  }) => {
+/**
+ * What just happened to the bot (saved, connected, failed) and what it still
+ * needs. Rendered above the form: the form is long enough now that a notice
+ * under it would be scrolled past, and a failed connection is the one thing
+ * the person has to see.
+ */
+export const FooterNotices = memo<FooterNoticesProps>(
+  ({ platformDef, currentConfig, form, hasConfig, connectResult, saveResult, testResult }) => {
     const { t } = useTranslation('agent');
-    const origin = useAppOrigin();
     const platformId = platformDef.id;
-    const applicationId = useWatch(form, 'applicationId');
-
     const settingsConnectionMode = useWatch(form, 'settings.connectionMode');
 
     const showWebhookUrl = platformDef.showWebhookUrl || settingsConnectionMode === 'webhook';
@@ -152,52 +137,8 @@ const Footer = memo<FooterProps>(
       hasUserIdField &&
       !(typeof effectiveUserId === 'string' && effectiveUserId.trim());
 
-    const webhookUrl = applicationId
-      ? `${origin}/api/agent/webhooks/${platformId}/${applicationId}`
-      : `${origin}/api/agent/webhooks/${platformId}`;
-
     return (
-      <div className={styles.bottom}>
-        <div className={styles.actionBar}>
-          {hasConfig ? (
-            <Button
-              danger
-              disabled={disabled || saving || connecting}
-              icon={<Trash2 size={16} />}
-              onClick={onDelete}
-            >
-              {t('channel.removeChannel')}
-            </Button>
-          ) : (
-            <div />
-          )}
-          <Flexbox horizontal gap={12}>
-            {hasConfig && (
-              <Button
-                disabled={writeDisabled || saving || connecting}
-                icon={<RefreshCw size={16} />}
-                loading={testing}
-                onClick={onTestConnection}
-              >
-                {t('channel.testConnection')}
-              </Button>
-            )}
-            {isDirty && (
-              <Button disabled={writeDisabled || saving || connecting} onClick={onDiscard}>
-                {t('channel.discard')}
-              </Button>
-            )}
-            <Button
-              disabled={writeDisabled}
-              loading={saving || connecting}
-              type="primary"
-              onClick={onSave}
-            >
-              {connecting ? t('channel.connecting') : t('channel.save')}
-            </Button>
-          </Flexbox>
-        </div>
-
+      <div className={styles.notices}>
         {saveResult && (
           <Alert
             closable
@@ -295,6 +236,102 @@ const Footer = memo<FooterProps>(
             type="info"
           />
         )}
+      </div>
+    );
+  },
+);
+
+FooterNotices.displayName = 'ChannelFooterNotices';
+
+interface FooterActionsProps {
+  connecting: boolean;
+  disabled?: boolean;
+  form: FormInstance<ChannelFormValues>;
+  hasConfig: boolean;
+  isDirty: boolean;
+  onCopied: () => void;
+  onDelete: () => void;
+  onDiscard: () => void;
+  onSave: () => void;
+  onTestConnection: () => void;
+  platformDef: SerializedPlatformDefinition;
+  saving: boolean;
+  testing: boolean;
+  writeDisabled?: boolean;
+}
+
+/** The buttons that act on the form, and the endpoint URL a webhook bot hands to the platform. */
+export const FooterActions = memo<FooterActionsProps>(
+  ({
+    platformDef,
+    form,
+    hasConfig,
+    isDirty,
+    connecting,
+    disabled,
+    saving,
+    testing,
+    writeDisabled,
+    onSave,
+    onDelete,
+    onDiscard,
+    onTestConnection,
+    onCopied,
+  }) => {
+    const { t } = useTranslation('agent');
+    const origin = useAppOrigin();
+    const platformId = platformDef.id;
+    const applicationId = useWatch(form, 'applicationId');
+    const settingsConnectionMode = useWatch(form, 'settings.connectionMode');
+    const showWebhookUrl = platformDef.showWebhookUrl || settingsConnectionMode === 'webhook';
+
+    const webhookUrl = applicationId
+      ? `${origin}/api/agent/webhooks/${platformId}/${applicationId}`
+      : `${origin}/api/agent/webhooks/${platformId}`;
+
+    return (
+      <div className={styles.bottom}>
+        <div className={styles.actionBar}>
+          {hasConfig ? (
+            <Button
+              danger
+              disabled={disabled || saving || connecting}
+              icon={<Trash2 size={16} />}
+              onClick={onDelete}
+            >
+              {t('channel.removeChannel')}
+            </Button>
+          ) : (
+            <div />
+          )}
+          <Flexbox horizontal gap={12}>
+            {hasConfig && (
+              <Button
+                disabled={writeDisabled || saving || connecting}
+                icon={<RefreshCw size={16} />}
+                loading={testing}
+                onClick={onTestConnection}
+              >
+                {t('channel.testConnection')}
+              </Button>
+            )}
+            {isDirty && (
+              <Button disabled={writeDisabled || saving || connecting} onClick={onDiscard}>
+                {t('channel.discard')}
+              </Button>
+            )}
+            <Button
+              disabled={writeDisabled}
+              loading={saving || connecting}
+              type="primary"
+              onClick={onSave}
+            >
+              {connecting
+                ? t('channel.connecting')
+                : t(hasConfig ? 'channel.save' : 'channel.saveAndConnect')}
+            </Button>
+          </Flexbox>
+        </div>
 
         {hasConfig && showWebhookUrl && (
           <Flexbox gap={8}>
@@ -332,4 +369,4 @@ const Footer = memo<FooterProps>(
   },
 );
 
-export default Footer;
+FooterActions.displayName = 'ChannelFooterActions';
