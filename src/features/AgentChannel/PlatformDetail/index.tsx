@@ -662,7 +662,16 @@ const PlatformDetail = memo<PlatformDetailProps>(
         },
         title: t('channel.removeChannel'),
       });
-    }, [readOnly, currentConfig, agentId, deleteBotProvider, t, form, platformDef.schema]);
+    }, [
+      readOnly,
+      currentConfig,
+      agentId,
+      deleteBotProvider,
+      t,
+      form,
+      platformDef.schema,
+      wakeReleased,
+    ]);
 
     const handleTestConnection = useCallback(async () => {
       if (writeDisabled) return;
@@ -827,7 +836,6 @@ const PlatformDetail = memo<PlatformDetailProps>(
                         <ActionIcon
                           aria-label={t('channel.quickView.collapse')}
                           icon={PanelRightClose}
-                          size={'small'}
                           title={t('channel.quickView.collapse')}
                           onClick={() => setPreviewOpen(false)}
                         />

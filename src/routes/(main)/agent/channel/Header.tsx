@@ -319,7 +319,7 @@ const Header = memo<HeaderProps>(
               title={
                 view.detail ? (
                   <Link relative="path" to="..">
-                    {t('tab.integration.page', { ns: 'chat' })}
+                    {t('tab.integration', { ns: 'chat' })}
                   </Link>
                 ) : undefined
               }

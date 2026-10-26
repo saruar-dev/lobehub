@@ -219,7 +219,7 @@
   "channel.hero.title": "{{name}} 机器人",
   "channel.historyLimit": "历史消息条数",
   "channel.historyLimitHint": "读取频道历史消息时默认获取的消息数量",
-  "channel.home.title": "在你喜爱的应用中与 <avatar/>{{name}} 聊天",
+  "channel.home.title": "在你喜爱的聊天软件中与 <avatar/>{{name}} 聊天",
   "channel.imessage.applicationIdHint": "云端 Bot 和桌面端桥接共同使用的稳定标识。",
   "channel.imessage.applicationIdPlaceholder": "例如 home-mac-mini",
   "channel.imessage.blueBubblesPassword": "BlueBubbles 密码",

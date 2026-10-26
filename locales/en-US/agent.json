@@ -219,7 +219,7 @@
   "channel.hero.title": "{{name}} bot",
   "channel.historyLimit": "History Message Limit",
   "channel.historyLimitHint": "Default number of messages to fetch when reading channel history",
-  "channel.home.title": "Chat with <avatar/>{{name}} on Your Favorite App",
+  "channel.home.title": "Chat with <avatar/>{{name}} on Your Favorite Chat App",
   "channel.imessage.applicationIdHint": "A stable identifier shared by the cloud bot and the Desktop bridge.",
   "channel.imessage.applicationIdPlaceholder": "e.g. home-mac-mini",
   "channel.imessage.blueBubblesPassword": "BlueBubbles Password",

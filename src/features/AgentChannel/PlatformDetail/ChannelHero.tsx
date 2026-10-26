@@ -12,7 +12,7 @@ import type { BotRuntimeStatus } from '@/types/botRuntimeStatus';
 
 import { getPlatformIcon } from '../const';
 import { getSetupGuide } from '../quickSetup/guides';
-import { ChannelStatusTag } from './ChannelStatusTag';
+import { ChannelStatusDot } from './ChannelStatusDot';
 import { findInviteLink, maskId } from './heroModel';
 
 const styles = stylex.create({
@@ -24,6 +24,7 @@ const styles = stylex.create({
     flexShrink: 0,
     height: 44,
     justifyContent: 'center',
+    position: 'relative',
     width: 44,
   },
 });
@@ -36,7 +37,7 @@ interface ChannelHeroProps {
   /** An extra action after the links, e.g. the button that brings the preview back. */
   extra?: ReactNode;
   platformDef: SerializedPlatformDefinition;
-  /** The saved bot's connection state, shown after the title. */
+  /** The saved bot's connection state, shown as a dot on the logo. */
   status?: BotRuntimeStatus;
 }
 
@@ -67,14 +68,14 @@ export const ChannelHero = memo<ChannelHeroProps>(
 
     return (
       <Flexbox horizontal align={'center'} data-testid={'channel-hero'} gap={12} wrap={'wrap'}>
-        <div {...stylex.props(styles.logo)}>{ColorIcon && <ColorIcon size={28} />}</div>
+        <div {...stylex.props(styles.logo)}>
+          {ColorIcon && <ColorIcon size={28} />}
+          <ChannelStatusDot status={status} />
+        </div>
         <Flexbox flex={1} gap={2} style={{ minWidth: 200 }}>
-          <Flexbox horizontal align={'center'} gap={8}>
-            <Text fontSize={18} weight={600}>
-              {t('channel.hero.title', { name: platformDef.name })}
-            </Text>
-            <ChannelStatusTag status={status} />
-          </Flexbox>
+          <Text fontSize={18} weight={600}>
+            {t('channel.hero.title', { name: platformDef.name })}
+          </Text>
           <Text ellipsis fontSize={13} type={'secondary'}>
             {savedId
               ? t('channel.hero.connected', { agent, id: maskId(savedId) })

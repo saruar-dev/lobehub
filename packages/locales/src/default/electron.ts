@@ -12,7 +12,7 @@ export default {
 
   'navigation.agentShare': 'Share',
   'navigation.agents': 'Agents',
-  'navigation.channels': 'Chat apps',
+  'navigation.channels': 'IM Bots',
   'navigation.chat': 'Chat',
   'navigation.dashboard': 'Dashboards',
   'navigation.discover': 'Discover',

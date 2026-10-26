@@ -11,8 +11,11 @@ import type { SerializedPlatformDefinition } from '@/server/services/bot/platfor
 
 import type { ChannelFormValues, CurrentConfig, TestResult } from './index';
 
-/** The tint stays, the border goes: notices sit on the page, not in boxes. */
-const NOTICE_STYLE = { border: 'none' } as const;
+/**
+ * The tint stays, the outline goes. The soft Alert draws its outline as an inset box-shadow, not a
+ * border, so that is what has to be cleared.
+ */
+const NOTICE_STYLE = { boxShadow: 'none' } as const;
 
 const styles = createStaticStyles(({ css, cssVar }) => ({
   actionBar: css`

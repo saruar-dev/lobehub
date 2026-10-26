@@ -143,7 +143,7 @@ export default {
   'channel.devWebhookProxyUrlHint':
     'Optional. HTTPS tunnel URL for forwarding webhook requests to local dev server.',
   'channel.discard': 'Discard',
-  'channel.home.title': 'Chat with <avatar/>{{name}} on Your Favorite App',
+  'channel.home.title': 'Chat with <avatar/>{{name}} on Your Favorite Chat App',
   'channel.platform.default.description':
     'Let people reach this agent from {{name}} without switching apps—ideal for anyone who wants help close at hand.',
   'channel.platform.discord.description':
