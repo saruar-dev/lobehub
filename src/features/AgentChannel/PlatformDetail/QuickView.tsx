@@ -185,14 +185,6 @@ export const QuickView = memo<QuickViewProps>(({ botAvatar, botName, form, platf
   const skin = skinFor(platformDef.id);
   const outcome = scene === 'dm' ? resolveDmOutcome(settings) : resolveGroupOutcome(settings);
   const keywords = pickKeywords(settings.watchKeywords);
-  const reaction =
-    settings.reactionMode === 'minimal' || settings.reactionMode === 'full'
-      ? t(
-          settings.reactionMode === 'full'
-            ? 'channel.reactionModeFull'
-            : 'channel.reactionModeMinimal',
-        )
-      : undefined;
 
   return (
     <Flexbox {...stylex.props(styles.panel)} data-testid={'channel-quick-view'} gap={12}>
@@ -265,11 +257,6 @@ export const QuickView = memo<QuickViewProps>(({ botAvatar, botName, form, platf
               <Words skin={skin}>{t('channel.quickView.answer')}</Words>
               {settings.showUsageStats && (
                 <span {...stylex.props(styles.mono)}>1.2k tokens · $0.004 · 3.2s</span>
-              )}
-              {reaction && (
-                <Text fontSize={12} type={'secondary'}>
-                  {t('channel.reactionMode')} · {reaction}
-                </Text>
               )}
               {outcome.scopeNote && (
                 <Text fontSize={12} type={'secondary'}>

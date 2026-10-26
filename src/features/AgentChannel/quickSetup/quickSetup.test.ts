@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getSetupGuide } from './guides';
+import { getInlineFieldKeys, getSetupGuide } from './guides';
 import {
   buildDiscordInviteUrl,
   buildSlackCreateAppUrl,
@@ -153,5 +153,29 @@ describe('getSetupGuide', () => {
 
   it('has no guide for platforms with their own flow', () => {
     expect(getSetupGuide('wechat', { appName: 'Moss' })).toBeUndefined();
+  });
+
+  it('asks for each credential in the step that produces it', () => {
+    const guide = getSetupGuide('discord', { appName: 'Moss' })!;
+    const fieldsOf = (key: string) => guide.steps.find((step) => step.key === key)?.fields;
+
+    expect(fieldsOf('credentials')).toEqual(['applicationId', 'publicKey']);
+    expect(fieldsOf('bot')).toEqual(['botToken']);
+  });
+
+  it('never asks for one credential in two steps, or in a step that is not shown', () => {
+    for (const platform of ['discord', 'slack', 'telegram', 'qq', 'line', 'feishu', 'lark']) {
+      const guide = getSetupGuide(platform, { appName: 'Moss' })!;
+      const keys = guide.steps.flatMap((step) => step.fields ?? []);
+
+      expect(new Set(keys).size).toBe(keys.length);
+      // Feishu / Lark hide their steps behind the scan, so nothing can live there.
+      if (guide.scanToCreate) expect(keys).toEqual([]);
+    }
+  });
+
+  it('lists the inline credentials per platform, and none for a platform without a guide', () => {
+    expect([...getInlineFieldKeys('telegram')]).toEqual(['botToken']);
+    expect(getInlineFieldKeys('wechat').size).toBe(0);
   });
 });

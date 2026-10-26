@@ -13,7 +13,6 @@ export interface PreviewSettings {
   dmPolicy?: string;
   groupAllowFrom?: unknown;
   groupPolicy?: string;
-  reactionMode?: string;
   watchKeywords?: unknown;
 }
 

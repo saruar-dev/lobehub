@@ -17,6 +17,7 @@ import {
   platformCredentialExtrasMap,
   platformSettingsFieldExtrasMap,
 } from '../platform/registry';
+import { getInlineFieldKeys } from '../quickSetup/guides';
 import QuickSetupSection from '../quickSetup/QuickSetupSection';
 import { AccessSection } from './AccessSection';
 import type { ChannelTab } from './channelTabs';
@@ -104,6 +105,30 @@ const Body = memo<BodyProps>(
       [platformDef.schema, featureFlags],
     );
 
+    // While a bot is being set up, its credentials are asked for in the setup
+    // step that produces them. A saved bot has no steps on screen, so they sit
+    // in the credentials group.
+    const inlineKeys = useMemo(
+      () => (hasConfig ? new Set<string>() : getInlineFieldKeys(platformDef.id)),
+      [hasConfig, platformDef.id],
+    );
+
+    const renderStepField = (key: string) => {
+      if (key === 'applicationId') {
+        const field = platformDef.schema.find((section) => section.key === 'applicationId');
+        return field && <ApplicationIdField disabled={disabled} field={field} />;
+      }
+      const field = credentialFields.find((item) => item.key === key);
+      return (
+        field && <SchemaField fullWidth disabled={disabled} field={field} parentKey="credentials" />
+      );
+    };
+
+    const groupCredentialFields = credentialFields.filter((field) => !inlineKeys.has(field.key));
+    const showApplicationId =
+      !inlineKeys.has('applicationId') &&
+      platformDef.schema.some((section) => section.key === 'applicationId');
+
     const connectGroup = settingsGroups.find((group) => group.key === 'connect');
 
     // Reset only what the section shows: access rules and reply style are
@@ -171,61 +196,66 @@ const Body = memo<BodyProps>(
                 form={form}
                 hasConfig={hasConfig}
                 platformId={platformDef.id}
+                renderField={inlineKeys.size > 0 ? renderStepField : undefined}
                 scope={quickSetupScope}
                 onAuthenticated={onAuthenticated}
               />
               {/* Credentials of a saved bot are masked and rarely edited, so they
             fold away; a new bot has nothing else to do but fill them in. */}
-              <Form.Group
-                collapsible={!!hasConfig}
-                defaultActive={!hasConfig}
-                desc={t('channel.group.credentialsDesc')}
-                keyValue={`credentials-${platformDef.id}`}
-                title={t('channel.credentials')}
-                variant={'filled'}
-              >
-                {/* Render top-level sections in schema order so each platform controls
+              {(groupCredentialFields.length > 0 || showApplicationId || !!CredentialExtras) && (
+                <Form.Group
+                  collapsible={!!hasConfig}
+                  defaultActive={!hasConfig}
+                  desc={t('channel.group.credentialsDesc')}
+                  keyValue={`credentials-${platformDef.id}`}
+                  title={t('channel.credentials')}
+                  variant={'filled'}
+                >
+                  {/* Render top-level sections in schema order so each platform controls
               its own field ordering. LINE places `credentials` before `applicationId`
               because the operator must enter the channel access token before the
               "Fetch from LINE" button (rendered after applicationId) can auto-fill
               the destination user ID; Discord/Slack/QQ/Feishu place `applicationId`
               first as a primary identifier. */}
-                {platformDef.schema
-                  .filter(
-                    (section) => section.key === 'applicationId' || section.key === 'credentials',
-                  )
-                  .map((section, sectionIndex) => {
-                    const needsDivider = sectionIndex > 0;
-                    if (section.key === 'applicationId') {
-                      return (
-                        <ApplicationIdField
-                          disabled={disabled}
-                          divider={needsDivider}
-                          field={section}
-                          key="applicationId"
-                        />
-                      );
-                    }
-                    return (
-                      <Fragment key="credentials">
-                        {credentialFields.map((field, i) => (
-                          <SchemaField
-                            fullWidth
+                  {platformDef.schema
+                    .filter(
+                      (section) =>
+                        (section.key === 'applicationId' && showApplicationId) ||
+                        section.key === 'credentials',
+                    )
+                    .map((section, sectionIndex) => {
+                      const needsDivider = sectionIndex > 0;
+                      if (section.key === 'applicationId') {
+                        return (
+                          <ApplicationIdField
                             disabled={disabled}
-                            divider={needsDivider || i !== 0}
-                            field={field}
-                            key={field.key}
-                            parentKey="credentials"
+                            divider={needsDivider}
+                            field={section}
+                            key="applicationId"
                           />
-                        ))}
-                      </Fragment>
-                    );
-                  })}
-                {/* Platform-specific helpers (e.g. LINE's "Fetch from LINE" button)
+                        );
+                      }
+                      return (
+                        <Fragment key="credentials">
+                          {groupCredentialFields.map((field, i) => (
+                            <SchemaField
+                              fullWidth
+                              disabled={disabled}
+                              divider={needsDivider || i !== 0}
+                              field={field}
+                              key={field.key}
+                              parentKey="credentials"
+                            />
+                          ))}
+                        </Fragment>
+                      );
+                    })}
+                  {/* Platform-specific helpers (e.g. LINE's "Fetch from LINE" button)
               render after the credential + applicationId block so the button
               sits next to the field it acts on. */}
-                {CredentialExtras && <CredentialExtras disabled={disabled} />}
-              </Form.Group>
+                  {CredentialExtras && <CredentialExtras disabled={disabled} />}
+                </Form.Group>
+              )}
             </>
           )}
           {connectGroup && (

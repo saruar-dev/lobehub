@@ -24,6 +24,12 @@ export type SetupLinkLabel =
   | 'openSlackApp';
 
 export interface SetupStep {
+  /**
+   * Keys of the credential fields this step is about (`applicationId`, or a key
+   * under `credentials`). While a bot is being set up they are filled in right
+   * under the step; a saved bot keeps them in its credentials group instead.
+   */
+  fields?: string[];
   /** i18n: `channel.quickSetup.<guide>.<key>.title` / `.desc` (agent namespace). */
   key: string;
   link?: { href: string; label: SetupLinkLabel };
@@ -84,8 +90,16 @@ export const getSetupGuide = (
               label: 'createSlackApp',
             },
           },
-          { key: 'install', link: { href: appPage('oauth'), label: 'openSlackApp' } },
-          { key: 'tokens', link: { href: appPage('general'), label: 'openSlackApp' } },
+          {
+            key: 'install',
+            fields: ['botToken'],
+            link: { href: appPage('oauth'), label: 'openSlackApp' },
+          },
+          {
+            key: 'tokens',
+            fields: ['applicationId', 'signingSecret', 'appToken'],
+            link: { href: appPage('general'), label: 'openSlackApp' },
+          },
         ],
       };
     }
@@ -94,9 +108,10 @@ export const getSetupGuide = (
         guide: 'discord',
         steps: [
           { key: 'create', link: { href: DISCORD_DEVELOPER_PORTAL_URL, label: 'openConsole' } },
-          { key: 'credentials' },
+          { key: 'credentials', fields: ['applicationId', 'publicKey'] },
           {
             key: 'bot',
+            fields: ['botToken'],
             link: {
               href: appId ? buildDiscordBotPageUrl(appId) : DISCORD_DEVELOPER_PORTAL_URL,
               label: 'openBotSettings',
@@ -115,7 +130,7 @@ export const getSetupGuide = (
         guide: 'telegram',
         steps: [
           { key: 'botfather', link: { href: TELEGRAM_BOTFATHER_URL, label: 'openBotFather' } },
-          { key: 'token' },
+          { key: 'token', fields: ['botToken'] },
           { key: 'privacy' },
         ],
       };
@@ -125,7 +140,7 @@ export const getSetupGuide = (
         guide: 'qq',
         steps: [
           { key: 'create', link: { href: QQ_BOT_CONSOLE_URL, label: 'openConsole' } },
-          { key: 'credentials' },
+          { key: 'credentials', fields: ['applicationId', 'appSecret'] },
         ],
       };
     }
@@ -150,3 +165,12 @@ export const getSetupGuide = (
     }
   }
 };
+
+/**
+ * Credential field keys a platform's setup steps fill in place. Empty for a
+ * platform without a guide, so its credentials stay in one group.
+ */
+export const getInlineFieldKeys = (platformId: string): Set<string> =>
+  new Set(
+    (getSetupGuide(platformId, { appName: '' })?.steps ?? []).flatMap((step) => step.fields ?? []),
+  );

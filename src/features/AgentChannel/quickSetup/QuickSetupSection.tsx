@@ -3,7 +3,7 @@
 import { Button, Flexbox, Icon } from '@lobehub/ui';
 import { Form, type FormInstance, useWatch } from '@lobehub/ui/form';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { memo, useMemo, useState } from 'react';
+import { memo, type ReactNode, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import FeishuQuickCreate, { type FeishuCreatedApp } from './FeishuQuickCreate';
@@ -24,6 +24,8 @@ interface QuickSetupSectionProps {
     credentials: Record<string, string>;
   }) => Promise<boolean> | void;
   platformId: string;
+  /** Input for a credential field, shown under the step that asks for it. */
+  renderField?: (key: string) => ReactNode;
   /** Who the created app is for (the agent id); a new scope starts a new scan. */
   scope?: string;
 }
@@ -35,7 +37,7 @@ interface QuickSetupSectionProps {
  * nothing left to set up, so the section folds away for it.
  */
 const QuickSetupSection = memo<QuickSetupSectionProps>(
-  ({ appName, disabled, form, hasConfig, onAuthenticated, platformId, scope }) => {
+  ({ appName, disabled, form, hasConfig, onAuthenticated, platformId, renderField, scope }) => {
     const { t } = useTranslation('agent');
     const applicationId = useWatch(form, (values) => values?.applicationId as string | undefined);
     const guide = useMemo(
@@ -89,7 +91,7 @@ const QuickSetupSection = memo<QuickSetupSectionProps>(
             </Button>
           </Flexbox>
         )}
-        {showSteps && <SetupGuide guide={guide} />}
+        {showSteps && <SetupGuide guide={guide} renderField={renderField} />}
       </Form.Group>
     );
   },
