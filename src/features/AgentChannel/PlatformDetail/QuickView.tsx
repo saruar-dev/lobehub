@@ -149,7 +149,11 @@ interface QuickViewProps {
   botAvatar?: { avatar?: string; background?: string };
   /** The agent's name, shown as the bot's name in the preview. */
   botName?: string;
+  /** Something at the right of the title, e.g. the button that folds the preview away. */
+  extra?: ReactNode;
   form: FormInstance<ChannelFormValues>;
+  /** The title is shown by whatever holds the preview (the drawer). */
+  hideTitle?: boolean;
   platformDef: SerializedPlatformDefinition;
 }
 
@@ -159,118 +163,125 @@ interface QuickViewProps {
  * It reads the live form, so every change shows up before it is saved. The
  * wording of the bot's own system replies is illustrative.
  */
-export const QuickView = memo<QuickViewProps>(({ botAvatar, botName, form, platformDef }) => {
-  const { t: _t } = useTranslation('agent');
-  const t = _t as (key: string, options?: Record<string, unknown>) => string;
+export const QuickView = memo<QuickViewProps>(
+  ({ botAvatar, botName, extra, form, hideTitle, platformDef }) => {
+    const { t: _t } = useTranslation('agent');
+    const t = _t as (key: string, options?: Record<string, unknown>) => string;
 
-  const settings = (useWatch(form, (values) => values.settings) ?? {}) as PreviewSettings & {
-    displayToolCalls?: boolean;
-    showUsageStats?: boolean;
-  };
+    const settings = (useWatch(form, (values) => values.settings) ?? {}) as PreviewSettings & {
+      displayToolCalls?: boolean;
+      showUsageStats?: boolean;
+    };
 
-  const scenes = useMemo(() => {
-    const section = platformDef.schema.find((field) => field.key === 'settings');
-    return resolveScenes(section?.properties?.map((field) => field.key) ?? []);
-  }, [platformDef.schema]);
+    const scenes = useMemo(() => {
+      const section = platformDef.schema.find((field) => field.key === 'settings');
+      return resolveScenes(section?.properties?.map((field) => field.key) ?? []);
+    }, [platformDef.schema]);
 
-  const [chosen, setChosen] = useState<PreviewScene>('group');
-  const scene = scenes.includes(chosen) ? chosen : 'group';
+    const [chosen, setChosen] = useState<PreviewScene>('group');
+    const scene = scenes.includes(chosen) ? chosen : 'group';
 
-  const name = botName?.trim() || t('channel.quickView.bot');
-  const stranger = t('channel.quickView.stranger');
-  const skin = skinFor(platformDef.id);
-  const outcome = scene === 'dm' ? resolveDmOutcome(settings) : resolveGroupOutcome(settings);
-  const keywords = pickKeywords(settings.watchKeywords);
+    const name = botName?.trim() || t('channel.quickView.bot');
+    const stranger = t('channel.quickView.stranger');
+    const skin = skinFor(platformDef.id);
+    const outcome = scene === 'dm' ? resolveDmOutcome(settings) : resolveGroupOutcome(settings);
+    const keywords = pickKeywords(settings.watchKeywords);
 
-  return (
-    <Flexbox {...stylex.props(styles.panel)} data-testid={'channel-quick-view'} gap={12}>
-      <Flexbox gap={2}>
-        <Text fontSize={16} weight={600}>
-          {t('channel.quickView.title')}
-        </Text>
-        <Text fontSize={12} type={'secondary'}>
-          {t('channel.quickView.desc')}
-        </Text>
-      </Flexbox>
+    return (
+      <Flexbox {...stylex.props(styles.panel)} data-testid={'channel-quick-view'} gap={12}>
+        <Flexbox horizontal align={'flex-start'} gap={8} justify={'space-between'}>
+          <Flexbox gap={2}>
+            {!hideTitle && (
+              <Text fontSize={16} weight={600}>
+                {t('channel.quickView.title')}
+              </Text>
+            )}
+            <Text fontSize={12} type={'secondary'}>
+              {t('channel.quickView.desc')}
+            </Text>
+          </Flexbox>
+          {extra}
+        </Flexbox>
 
-      {scenes.length > 1 && (
-        <Segmented
-          block
-          size={'small'}
-          value={scene}
-          options={[
-            { label: t('channel.quickView.sceneGroup'), value: 'group' },
-            { label: t('channel.quickView.sceneDm'), value: 'dm' },
-          ]}
-          onChange={(value) => setChosen(value as PreviewScene)}
-        />
-      )}
+        {scenes.length > 1 && (
+          <Segmented
+            block
+            size={'small'}
+            value={scene}
+            options={[
+              { label: t('channel.quickView.sceneGroup'), value: 'group' },
+              { label: t('channel.quickView.sceneDm'), value: 'dm' },
+            ]}
+            onChange={(value) => setChosen(value as PreviewScene)}
+          />
+        )}
 
-      <Flexbox {...stylex.props(styles.stage)} gap={16}>
-        <Row
-          avatar={<span {...stylex.props(styles.senderAvatar)}>{stranger.slice(0, 1)}</span>}
-          name={stranger}
-          skin={skin}
-        >
-          <Words skin={skin}>
-            {scene === 'dm' ? (
-              t('channel.quickView.askDm')
-            ) : (
+        <Flexbox {...stylex.props(styles.stage)} gap={16}>
+          <Row
+            avatar={<span {...stylex.props(styles.senderAvatar)}>{stranger.slice(0, 1)}</span>}
+            name={stranger}
+            skin={skin}
+          >
+            <Words skin={skin}>
+              {scene === 'dm' ? (
+                t('channel.quickView.askDm')
+              ) : (
+                <>
+                  <span
+                    {...stylex.props(skin === 'discord' ? styles.discordMention : styles.mention)}
+                  >
+                    @{name}
+                  </span>{' '}
+                  {t('channel.quickView.ask')}
+                </>
+              )}
+            </Words>
+          </Row>
+
+          <Row
+            name={name}
+            skin={skin}
+            tag={skin === 'discord' ? <span {...stylex.props(styles.appTag)}>APP</span> : undefined}
+            avatar={
+              <Avatar
+                avatar={botAvatar?.avatar}
+                background={botAvatar?.background}
+                name={name}
+                shape={'circle'}
+                size={36}
+              />
+            }
+          >
+            {outcome.kind === 'notice' && (
+              <Words skin={skin}>{t(`channel.quickView.${outcome.noticeKey}`)}</Words>
+            )}
+            {outcome.kind === 'answer' && (
               <>
-                <span
-                  {...stylex.props(skin === 'discord' ? styles.discordMention : styles.mention)}
-                >
-                  @{name}
-                </span>{' '}
-                {t('channel.quickView.ask')}
+                {settings.displayToolCalls && (
+                  <div {...stylex.props(styles.toolCall)}>{t('channel.quickView.toolCall')}</div>
+                )}
+                <Words skin={skin}>{t('channel.quickView.answer')}</Words>
+                {settings.showUsageStats && (
+                  <span {...stylex.props(styles.mono)}>1.2k tokens · $0.004 · 3.2s</span>
+                )}
+                {outcome.scopeNote && (
+                  <Text fontSize={12} type={'secondary'}>
+                    {t(`channel.quickView.${outcome.scopeNote}`)}
+                  </Text>
+                )}
               </>
             )}
-          </Words>
-        </Row>
+          </Row>
 
-        <Row
-          name={name}
-          skin={skin}
-          tag={skin === 'discord' ? <span {...stylex.props(styles.appTag)}>APP</span> : undefined}
-          avatar={
-            <Avatar
-              avatar={botAvatar?.avatar}
-              background={botAvatar?.background}
-              name={name}
-              shape={'circle'}
-              size={36}
-            />
-          }
-        >
-          {outcome.kind === 'notice' && (
-            <Words skin={skin}>{t(`channel.quickView.${outcome.noticeKey}`)}</Words>
+          {scene === 'group' && keywords.length > 0 && (
+            <Text fontSize={12} type={'secondary'}>
+              {t('channel.quickView.keywords', { keywords: keywords.join(' / ') })}
+            </Text>
           )}
-          {outcome.kind === 'answer' && (
-            <>
-              {settings.displayToolCalls && (
-                <div {...stylex.props(styles.toolCall)}>{t('channel.quickView.toolCall')}</div>
-              )}
-              <Words skin={skin}>{t('channel.quickView.answer')}</Words>
-              {settings.showUsageStats && (
-                <span {...stylex.props(styles.mono)}>1.2k tokens · $0.004 · 3.2s</span>
-              )}
-              {outcome.scopeNote && (
-                <Text fontSize={12} type={'secondary'}>
-                  {t(`channel.quickView.${outcome.scopeNote}`)}
-                </Text>
-              )}
-            </>
-          )}
-        </Row>
-
-        {scene === 'group' && keywords.length > 0 && (
-          <Text fontSize={12} type={'secondary'}>
-            {t('channel.quickView.keywords', { keywords: keywords.join(' / ') })}
-          </Text>
-        )}
+        </Flexbox>
       </Flexbox>
-    </Flexbox>
-  );
-});
+    );
+  },
+);
 
 QuickView.displayName = 'ChannelQuickView';

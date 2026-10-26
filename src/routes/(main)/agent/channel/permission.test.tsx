@@ -344,7 +344,6 @@ describe('Agent channel permission gates', () => {
         agentId="agent-id"
         currentConfig={currentConfig}
         platformDef={platformDef}
-        runtimeStatus="connected"
       />,
     );
 

@@ -11,6 +11,9 @@ import type { SerializedPlatformDefinition } from '@/server/services/bot/platfor
 
 import type { ChannelFormValues, CurrentConfig, TestResult } from './index';
 
+/** The tint stays, the border goes: notices sit on the page, not in boxes. */
+const NOTICE_STYLE = { border: 'none' } as const;
+
 const styles = createStaticStyles(({ css, cssVar }) => ({
   actionBar: css`
     display: flex;
@@ -143,9 +146,9 @@ export const FooterNotices = memo<FooterNoticesProps>(
           <Alert
             closable
             showIcon
+            style={NOTICE_STYLE}
             title={saveResult.type === 'success' ? t('channel.saved') : t('channel.saveFailed')}
             type={saveResult.type}
-            variant="borderless"
             description={
               saveResult.type === 'error' ? (
                 <ResultDetail
@@ -161,8 +164,8 @@ export const FooterNotices = memo<FooterNoticesProps>(
           <Alert
             closable
             showIcon
+            style={NOTICE_STYLE}
             type={connectResult.type}
-            variant="borderless"
             description={
               connectResult.type === 'error' ? (
                 <ResultDetail
@@ -184,8 +187,8 @@ export const FooterNotices = memo<FooterNoticesProps>(
           <Alert
             closable
             showIcon
+            style={NOTICE_STYLE}
             type={testResult.type}
-            variant="borderless"
             description={
               testResult.type === 'error' ? (
                 <ResultDetail
@@ -206,8 +209,8 @@ export const FooterNotices = memo<FooterNoticesProps>(
             showIcon
             description={t('channel.userIdMissingDesc')}
             message={t('channel.userIdMissingTitle')}
+            style={NOTICE_STYLE}
             type="info"
-            variant="borderless"
           />
         )}
 
@@ -217,8 +220,8 @@ export const FooterNotices = memo<FooterNoticesProps>(
             showIcon
             description={t('channel.qq.webhookMigrationDesc')}
             message={t('channel.qq.webhookMigrationTitle')}
+            style={NOTICE_STYLE}
             type="info"
-            variant="borderless"
           />
         )}
 
@@ -228,8 +231,8 @@ export const FooterNotices = memo<FooterNoticesProps>(
             showIcon
             description={t('channel.slack.webhookMigrationDesc')}
             message={t('channel.slack.webhookMigrationTitle')}
+            style={NOTICE_STYLE}
             type="info"
-            variant="borderless"
           />
         )}
 
@@ -239,8 +242,8 @@ export const FooterNotices = memo<FooterNoticesProps>(
             showIcon
             description={t('channel.feishu.webhookMigrationDesc')}
             message={t('channel.feishu.webhookMigrationTitle')}
+            style={NOTICE_STYLE}
             type="info"
-            variant="borderless"
           />
         )}
       </div>
@@ -359,8 +362,8 @@ export const FooterActions = memo<FooterActionsProps>(
             </Flexbox>
             <Alert
               showIcon
+              style={NOTICE_STYLE}
               type="info"
-              variant="borderless"
               message={
                 <Trans<'channel.endpointUrlHint', 'agent'>
                   components={{ bold: <strong /> }}

@@ -1899,6 +1899,7 @@ export default {
   'supervisor.todoList.title': 'Tasks Completed',
   'tab.groupProfile': 'Group Profile',
   'tab.integration': 'IM Bots',
+  'tab.integration.page': 'Chat apps',
   'tab.profile': 'Agent Profile',
   'tab.profileBasic': 'Profile',
   'tab.search': 'Search',

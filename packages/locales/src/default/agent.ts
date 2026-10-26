@@ -511,6 +511,8 @@ export default {
   'channel.group.credentialsDesc': 'Encrypted when saved, and shown masked afterwards.',
   'channel.group.credentialsOptional': 'Optional credentials',
   'channel.quickView.title': 'Quick view',
+  'channel.quickView.open': 'Preview',
+  'channel.quickView.collapse': 'Collapse preview',
   'channel.quickView.desc':
     'How the bot behaves in chat with the settings as they are now, before you save. Illustrative.',
   'channel.quickView.sceneGroup': 'Group',
@@ -580,6 +582,8 @@ export default {
   'channel.tab.access': 'Access',
   'channel.tab.reply': 'Replies',
   'channel.tab.wake': 'Wake policy',
+  'channel.wake.intro':
+    'Decides whether the bot may answer a message nobody addressed to it: a watch keyword in a thread it was not mentioned in, or a message continuing a conversation it already joined. Plain channel chatter is only judged and recorded, never answered.',
   'channel.tab.advanced': 'Advanced',
   'channel.group.connection': 'Connection options',
   'channel.reply.instant':

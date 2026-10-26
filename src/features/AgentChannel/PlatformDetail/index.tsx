@@ -1,8 +1,18 @@
 'use client';
 
-import { Alert, Button, confirmModal, createStaticStyles, Flexbox, toast } from '@lobehub/ui';
+import {
+  ActionIcon,
+  Alert,
+  Button,
+  confirmModal,
+  createStaticStyles,
+  Drawer,
+  Flexbox,
+  Icon,
+  toast,
+} from '@lobehub/ui';
 import { useForm, useWatch } from '@lobehub/ui/form';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -26,14 +36,17 @@ import { FooterActions, FooterNotices } from './Footer';
 import {
   findOverLimitSettings,
   getChannelFormValues,
+  isWakeMasterReleased,
   mergeCredentialsForSave,
   mergeSettingsWithDefaults,
   shouldAdoptIncomingConfig,
+  withWakeMasterOn,
 } from './formState';
 import { type ChannelPostSave, ChannelPostSaveContext } from './postSaveContext';
 import { QuickView } from './QuickView';
 import { hasPendingChanges, pickKeys, replyDiffers } from './replySettings';
 import { getSchemaFields, groupSettingsFields, REPLY_KEYS } from './settingsGroups';
+import { useNarrowLayout } from './useNarrowLayout';
 
 const styles = createStaticStyles(({ css, cssVar }) => ({
   content: css`
@@ -45,13 +58,10 @@ const styles = createStaticStyles(({ css, cssVar }) => ({
     padding-block: 16px 24px;
     padding-inline: 24px;
   `,
-  hero: css`
-    width: 100%;
-    max-width: 1200px;
-    padding-block-end: 16px;
-  `,
-  // Settings on the left, the quick view fixed beside them. Below this width
-  // there is no room for two columns, so the quick view leads the page.
+  // The page is one split from the top: the bot's header, tabs and form on the
+  // left, the chat preview fixed on the right behind a divider. Below this
+  // width there is no room for two columns, so the preview folds into a button
+  // that opens it from the right.
   layout: css`
     display: grid;
     grid-template-columns: minmax(0, 1fr) 360px;
@@ -61,7 +71,8 @@ const styles = createStaticStyles(({ css, cssVar }) => ({
     width: 100%;
     max-width: 1200px;
 
-    @media (width <= 1100px) {
+    &[data-preview='closed'],
+    &[data-narrow='true'] {
       grid-template-columns: minmax(0, 1fr);
     }
   `,
@@ -75,37 +86,26 @@ const styles = createStaticStyles(({ css, cssVar }) => ({
     min-width: 0;
     padding-inline-end: 32px;
 
-    @media (width <= 1100px) {
-      grid-row: 2;
+    &[data-preview='closed'],
+    &[data-narrow='true'] {
       padding-inline-end: 0;
     }
   `,
-  // The preview is the other half of a split: a divider on its left edge, no
-  // fill, and the chat itself sticks while the form scrolls.
+  hero: css`
+    width: 100%;
+    max-width: 1024px;
+    padding-block-end: 16px;
+  `,
   quickView: css`
     grid-column: 2;
     grid-row: 1;
     padding-inline-start: 32px;
     border-inline-start: 1px solid ${cssVar.colorBorderSecondary};
-
-    @media (width <= 1100px) {
-      grid-column: 1;
-      grid-row: 1;
-
-      padding-block-end: 16px;
-      padding-inline-start: 0;
-      border-block-end: 1px solid ${cssVar.colorBorderSecondary};
-      border-inline-start: none;
-    }
   `,
   quickViewSticky: css`
     position: sticky;
     inset-block-start: 16px;
-    margin-block-start: 8px;
-
-    @media (width <= 1100px) {
-      position: static;
-    }
+    padding-block-start: 8px;
   `,
   main: css`
     position: relative;
@@ -126,14 +126,13 @@ const omitUndefinedValues = <T extends Record<string, unknown>>(record: T) =>
 const getFormValues = (
   schema: SerializedPlatformDefinition['schema'],
   config?: CurrentConfig,
+  wakeReleased = false,
 ): ChannelFormValues => {
   const values = config ? getChannelFormValues(config) : { credentials: {}, settings: {} };
+  const settings = mergeSettingsWithDefaults(schema, omitUndefinedValues(values.settings));
   return {
     ...values,
-    settings: mergeSettingsWithDefaults(schema, omitUndefinedValues(values.settings)) as Record<
-      string,
-      {} | undefined
-    >,
+    settings: withWakeMasterOn(settings, wakeReleased) as Record<string, {} | undefined>,
   };
 };
 
@@ -178,20 +177,27 @@ const PlatformDetail = memo<PlatformDetailProps>(
       (s) => agentSelectors.getAgentMetaById(agentId)(s).backgroundColor,
     );
 
+    // Options behind a rollout flag are left out of the tabs until the flag is on.
+    const featureFlags = useServerConfigStore((state) => state.featureFlags) as
+      Record<string, unknown> | undefined;
+    const wakeReleased = isWakeMasterReleased(platformDef.schema, featureFlags);
     // What is stored, in form shape. The reply settings are compared against it
     // to decide what to save on the spot, everything else to decide what still
     // waits for the Save button.
     const storedValues = useMemo(
-      () => getFormValues(platformDef.schema, currentConfig),
-      [platformDef.schema, currentConfig],
+      () => getFormValues(platformDef.schema, currentConfig, wakeReleased),
+      [platformDef.schema, currentConfig, wakeReleased],
     );
     const storedRef = useRef(storedValues);
     useEffect(() => {
       storedRef.current = storedValues;
     }, [storedValues]);
-    // Options behind a rollout flag are left out of the tabs until the flag is on.
-    const featureFlags = useServerConfigStore((state) => state.featureFlags) as
-      Record<string, unknown> | undefined;
+    // The chat preview sits beside the form while there is room, and can be
+    // folded away; on a narrow window it opens from the right instead.
+    const narrow = useNarrowLayout();
+    const [previewOpen, setPreviewOpen] = useState(true);
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const previewInline = !narrow && previewOpen;
     const replyKeys = useMemo(
       () =>
         REPLY_KEYS.filter((key) =>
@@ -205,7 +211,7 @@ const PlatformDetail = memo<PlatformDetailProps>(
 
     const [isDirty, setIsDirty] = useState(false);
     const form = useForm<ChannelFormValues>({
-      initialValues: getFormValues(platformDef.schema, currentConfig),
+      initialValues: getFormValues(platformDef.schema, currentConfig, wakeReleased),
       onValuesChange: () => valuesChangedRef.current?.(),
     });
 
@@ -391,9 +397,9 @@ const PlatformDetail = memo<PlatformDetailProps>(
       // person's latest toggle yet, and adopting it would flip the toggle back.
       if (autoSavingRef.current) return;
 
-      form.reset(getFormValues(platformDef.schema, currentConfig));
+      form.reset(getFormValues(platformDef.schema, currentConfig, wakeReleased));
       setIsDirty(false);
-    }, [currentConfig, form, platformDef.schema, isDirty]);
+    }, [currentConfig, wakeReleased, form, platformDef.schema, isDirty]);
 
     // Reply settings are switches and choices whose effect is seen at once in
     // the chat, so they are stored as soon as they change instead of waiting for
@@ -645,7 +651,7 @@ const PlatformDetail = memo<PlatformDetailProps>(
           try {
             await deleteBotProvider(currentConfig.id, agentId);
             toast.success(t('channel.removed'));
-            form.reset(getFormValues(platformDef.schema));
+            form.reset(getFormValues(platformDef.schema, undefined, wakeReleased));
           } catch {
             toast.error(t('channel.removeFailed'));
           }
@@ -688,11 +694,11 @@ const PlatformDetail = memo<PlatformDetailProps>(
     }, [writeDisabled, currentConfig, connectResult, platformDef.id, testConnection, t]);
 
     const handleDiscard = useCallback(() => {
-      form.reset(getFormValues(platformDef.schema, currentConfig));
+      form.reset(getFormValues(platformDef.schema, currentConfig, wakeReleased));
       setIsDirty(false);
       setSaveResult(undefined);
       setTestResult(undefined);
-    }, [currentConfig, form, platformDef.schema]);
+    }, [currentConfig, wakeReleased, form, platformDef.schema]);
 
     const handleFormValuesChange = handleValuesChange;
 
@@ -731,25 +737,34 @@ const PlatformDetail = memo<PlatformDetailProps>(
                 }
               />
             )}
-            <div className={styles.hero}>
-              <ChannelHero
-                applicationId={currentConfig?.applicationId}
-                botName={agentName}
-                platformDef={platformDef}
-              />
-            </div>
-            <div className={styles.layout}>
-              <div className={styles.quickView}>
-                <div className={styles.quickViewSticky}>
-                  <QuickView
-                    botAvatar={{ avatar: agentAvatar, background: agentBackground }}
+            <div
+              className={styles.layout}
+              data-narrow={narrow}
+              data-preview={previewInline ? 'open' : 'closed'}
+            >
+              <div
+                className={styles.primary}
+                data-narrow={narrow}
+                data-preview={previewInline ? 'open' : 'closed'}
+              >
+                <div className={styles.hero}>
+                  <ChannelHero
+                    applicationId={currentConfig?.applicationId}
                     botName={agentName}
-                    form={form}
                     platformDef={platformDef}
+                    status={currentConfig?.enabled ? runtimeSnapshot?.status : undefined}
+                    extra={
+                      previewInline ? undefined : (
+                        <Button
+                          icon={<Icon icon={PanelRightOpen} />}
+                          onClick={() => (narrow ? setDrawerOpen(true) : setPreviewOpen(true))}
+                        >
+                          {t('channel.quickView.open')}
+                        </Button>
+                      )
+                    }
                   />
                 </div>
-              </div>
-              <div className={styles.primary}>
                 <ChannelTabBar
                   active={activeTab}
                   issues={tabIssues}
@@ -794,7 +809,42 @@ const PlatformDetail = memo<PlatformDetailProps>(
                   onTestConnection={handleTestConnection}
                 />
               </div>
+              {previewInline && (
+                <aside className={styles.quickView}>
+                  <div className={styles.quickViewSticky}>
+                    <QuickView
+                      botAvatar={{ avatar: agentAvatar, background: agentBackground }}
+                      botName={agentName}
+                      form={form}
+                      platformDef={platformDef}
+                      extra={
+                        <ActionIcon
+                          icon={PanelRightClose}
+                          size={'small'}
+                          title={t('channel.quickView.collapse')}
+                          onClick={() => setPreviewOpen(false)}
+                        />
+                      }
+                    />
+                  </div>
+                </aside>
+              )}
             </div>
+            <Drawer
+              open={narrow && drawerOpen}
+              placement={'right'}
+              title={t('channel.quickView.title')}
+              width={'min(420px, 92vw)'}
+              onClose={() => setDrawerOpen(false)}
+            >
+              <QuickView
+                hideTitle
+                botAvatar={{ avatar: agentAvatar, background: agentBackground }}
+                botName={agentName}
+                form={form}
+                platformDef={platformDef}
+              />
+            </Drawer>
           </div>
         </main>
       </ChannelPostSaveContext>

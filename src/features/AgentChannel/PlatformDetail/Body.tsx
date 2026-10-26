@@ -21,7 +21,7 @@ import { getInlineFieldKeys } from '../quickSetup/guides';
 import QuickSetupSection from '../quickSetup/QuickSetupSection';
 import { AccessSection } from './AccessSection';
 import type { ChannelTab } from './channelTabs';
-import { extractSettingsDefaults } from './formState';
+import { extractSettingsDefaults, WAKE_MASTER_KEY } from './formState';
 import type { ChannelFormValues } from './index';
 import { ApplicationIdField, SchemaField } from './SchemaField';
 import { getSchemaFields, groupSettingsFields } from './settingsGroups';
@@ -209,8 +209,8 @@ const Body = memo<BodyProps>(
                   collapsible={!!hasConfig || inlineKeys.size > 0}
                   defaultActive={!hasConfig && inlineKeys.size === 0}
                   desc={t('channel.group.credentialsDesc')}
-                  variant={'filled'}
                   keyValue={`credentials-${platformDef.id}`}
+                  variant={'filled'}
                   // The steps above ask for what is needed; what is left is optional.
                   title={t(
                     inlineKeys.size > 0
@@ -288,6 +288,11 @@ const Body = memo<BodyProps>(
           .filter((group) => group.key !== 'connect')
           .map((group) => (
             <Panel active={activeTab === group.key} key={group.key} tab={group.key}>
+              {group.key === 'wake' && (
+                <Text fontSize={12} type={'secondary'}>
+                  {t('channel.wake.intro')}
+                </Text>
+              )}
               {group.key === 'reply' && hasConfig && (
                 <Text fontSize={12} type={'secondary'}>
                   {t('channel.reply.instant')}
@@ -308,25 +313,28 @@ const Body = memo<BodyProps>(
                     onValuesChange={onValuesChange}
                   />
                 ) : (
-                  group.fields.map((field, index) => {
-                    // Feature-gated fields (e.g. watch keywords) lock when the
-                    // resolved access meta reports the feature as not allowed.
-                    const featureLocked =
-                      !!field.paidFeature &&
-                      platformDef.access?.features?.[field.paidFeature]?.allowed === false;
-                    return (
-                      <Fragment key={field.key}>
-                        <SchemaField
-                          disabled={disabled}
-                          divider={index !== 0}
-                          featureLocked={featureLocked}
-                          field={field}
-                          parentKey="settings"
-                        />
-                        {renderExtras(field, featureLocked)}
-                      </Fragment>
-                    );
-                  })
+                  group.fields
+                    // The master switch is always on for the people who see these options.
+                    .filter((field) => field.key !== WAKE_MASTER_KEY)
+                    .map((field, index) => {
+                      // Feature-gated fields (e.g. watch keywords) lock when the
+                      // resolved access meta reports the feature as not allowed.
+                      const featureLocked =
+                        !!field.paidFeature &&
+                        platformDef.access?.features?.[field.paidFeature]?.allowed === false;
+                      return (
+                        <Fragment key={field.key}>
+                          <SchemaField
+                            disabled={disabled}
+                            divider={index !== 0}
+                            featureLocked={featureLocked}
+                            field={field}
+                            parentKey="settings"
+                          />
+                          {renderExtras(field, featureLocked)}
+                        </Fragment>
+                      );
+                    })
                 )}
                 {group.key === 'advanced' && (
                   <Flexbox horizontal justify={'flex-end'} style={{ paddingBlock: 8 }}>
