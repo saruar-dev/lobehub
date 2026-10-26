@@ -45,6 +45,7 @@ import {
 import { type ChannelPostSave, ChannelPostSaveContext } from './postSaveContext';
 import { QuickView } from './QuickView';
 import { hasPendingChanges, pickKeys, replyDiffers } from './replySettings';
+import { createSaveCoordinator } from './saveCoordinator';
 import { getSchemaFields, groupSettingsFields, REPLY_KEYS } from './settingsGroups';
 import { useNarrowLayout } from './useNarrowLayout';
 
@@ -211,8 +212,10 @@ const PlatformDetail = memo<PlatformDetailProps>(
       [platformDef.schema],
     );
     const valuesChangedRef = useRef<() => void>(undefined);
-    const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
     const autoSavingRef = useRef(false);
+    // Reply autosaves and the Save button both write the whole settings column;
+    // this keeps them from overlapping (see `createSaveCoordinator`).
+    const saveCoordinator = useMemo(() => createSaveCoordinator(), []);
 
     const [isDirty, setIsDirty] = useState(false);
     const form = useForm<ChannelFormValues>({
@@ -412,43 +415,47 @@ const PlatformDetail = memo<PlatformDetailProps>(
     // a half-finished edit on another tab is neither saved nor lost.
     const saveReplySettings = useCallback(async () => {
       if (!currentConfig || writeDisabled || replyKeys.length === 0) return;
-      if (autoSavingRef.current) return;
+      if (autoSavingRef.current || saveCoordinator.isExplicit()) return;
 
       const { valid } = await form.validate(replyKeys.map((key) => `settings.${key}` as const));
-      if (!valid) return;
+      // The Save button may have started while this was validating; it writes these values too.
+      if (!valid || saveCoordinator.isExplicit()) return;
 
       const values = form.getValues();
       const stored = storedRef.current;
       if (!replyDiffers(values.settings, stored.settings, replyKeys)) return;
 
-      autoSavingRef.current = true;
-      try {
-        const settings = mergeSettingsWithDefaults(
-          platformDef.schema,
-          omitUndefinedValues({ ...stored.settings, ...pickKeys(values.settings, replyKeys) }),
-        );
-        await updateBotProvider(currentConfig.id, agentId, { settings });
-        storedRef.current = { ...stored, settings: settings as ChannelFormValues['settings'] };
-        toast.success(t('channel.saved'));
-      } catch {
-        toast.error(t('channel.updateFailed'));
-        form.setValues({
-          settings: {
-            ...form.getValues().settings,
-            ...(pickKeys(stored.settings, replyKeys) as ChannelFormValues['settings']),
-          },
-        });
-      } finally {
-        autoSavingRef.current = false;
-        // Anything toggled while this save was running still has to go out.
-        valuesChangedRef.current?.();
-      }
+      await saveCoordinator.runAuto(async () => {
+        autoSavingRef.current = true;
+        try {
+          const settings = mergeSettingsWithDefaults(
+            platformDef.schema,
+            omitUndefinedValues({ ...stored.settings, ...pickKeys(values.settings, replyKeys) }),
+          );
+          await updateBotProvider(currentConfig.id, agentId, { settings });
+          storedRef.current = { ...stored, settings: settings as ChannelFormValues['settings'] };
+          toast.success(t('channel.saved'));
+        } catch {
+          toast.error(t('channel.updateFailed'));
+          form.setValues({
+            settings: {
+              ...form.getValues().settings,
+              ...(pickKeys(stored.settings, replyKeys) as ChannelFormValues['settings']),
+            },
+          });
+        } finally {
+          autoSavingRef.current = false;
+          // Anything toggled while this save was running still has to go out.
+          valuesChangedRef.current?.();
+        }
+      });
     }, [
       agentId,
       currentConfig,
       form,
       platformDef.schema,
       replyKeys,
+      saveCoordinator,
       t,
       updateBotProvider,
       writeDisabled,
@@ -461,16 +468,19 @@ const PlatformDetail = memo<PlatformDetailProps>(
       if (!currentConfig || writeDisabled || replyKeys.length === 0) return;
       if (!replyDiffers(values.settings, storedRef.current.settings, replyKeys)) return;
 
-      clearTimeout(autoSaveTimerRef.current);
-      autoSaveTimerRef.current = setTimeout(() => void saveReplySettings(), 400);
-    }, [currentConfig, form, replyKeys, saveReplySettings, writeDisabled]);
+      saveCoordinator.scheduleAuto(saveReplySettings, 400);
+    }, [currentConfig, form, replyKeys, saveCoordinator, saveReplySettings, writeDisabled]);
     useEffect(() => {
       valuesChangedRef.current = handleValuesChange;
     }, [handleValuesChange]);
-    useEffect(() => () => clearTimeout(autoSaveTimerRef.current), []);
+    useEffect(() => () => saveCoordinator.dispose(), [saveCoordinator]);
 
     const handleSave = useCallback(async () => {
       if (writeDisabled) return;
+
+      // This save writes the reply settings too: drop a pending autosave, wait
+      // for one already on its way, and keep new ones out until this is done.
+      await saveCoordinator.beginExplicit();
 
       try {
         const { valid } = await form.validate();
@@ -553,6 +563,14 @@ const PlatformDetail = memo<PlatformDetailProps>(
         // local BlueBubbles bridge) as part of the same save.
         await postSaveRef.current?.({ applicationId });
 
+        // A later reply autosave builds on what is stored; make that this save
+        // right away rather than when the refreshed config arrives.
+        storedRef.current = {
+          ...values,
+          applicationId,
+          credentials,
+          settings: settings as ChannelFormValues['settings'],
+        };
         setIsDirty(false);
         setSaveResult({ type: 'success' });
         setTimeout(() => setSaveResult(undefined), 3000);
@@ -564,6 +582,8 @@ const PlatformDetail = memo<PlatformDetailProps>(
         console.error(e);
         setSaveResult({ errorDetail: e?.message || String(e), type: 'error' });
         setSaving(false);
+      } finally {
+        saveCoordinator.endExplicit();
       }
     }, [
       agentId,
@@ -573,6 +593,7 @@ const PlatformDetail = memo<PlatformDetailProps>(
       createBotProvider,
       updateBotProvider,
       connectCurrentBot,
+      saveCoordinator,
       tabs,
       writeDisabled,
       t,

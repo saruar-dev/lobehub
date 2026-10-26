@@ -13,6 +13,7 @@ import {
   countListed,
   deriveDmStance,
   type DmStance,
+  dropHiddenIncompleteRows,
 } from './accessStance';
 import { ChoiceList, type ChoiceOption } from './ChoiceList';
 import type { ChannelFormValues } from './index';
@@ -55,7 +56,11 @@ export const AccessSection = memo<AccessSectionProps>(
     const write = useCallback(
       (patch: Record<string, unknown>) => {
         const current = (form.getValues().settings ?? {}) as Record<string, unknown>;
-        form.setValues({ settings: { ...current, ...patch } as Record<string, {} | undefined> });
+        const next = { ...current, ...patch };
+        // A list this choice hides must not keep a half-added row: its hidden
+        // "ID required" error would block every save.
+        Object.assign(next, dropHiddenIncompleteRows(next));
+        form.setValues({ settings: next as Record<string, {} | undefined> });
         onValuesChange?.(form.getValues());
       },
       [form, onValuesChange],

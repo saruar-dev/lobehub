@@ -97,3 +97,33 @@ export const accessIssues = (settings: AccessSettings): AccessIssue[] => {
 
   return issues;
 };
+
+const hasId = (entry: unknown) =>
+  typeof entry === 'string'
+    ? entry.trim() !== ''
+    : !!entry &&
+      typeof entry === 'object' &&
+      String((entry as { id?: unknown }).id ?? '').trim() !== '';
+
+/**
+ * Rows without an ID in a list the page has just hidden. A hidden list stays mounted (so a saved
+ * list is never dropped), which also keeps its "ID required" check alive: a half-added row would
+ * block every save with an error nobody can see. Returns only the lists that changed.
+ */
+export const dropHiddenIncompleteRows = (
+  settings: AccessSettings & { groupAllowFrom?: unknown; groupPolicy?: string },
+): Record<string, unknown> => {
+  const patch: Record<string, unknown> = {};
+  const prune = (key: 'allowFrom' | 'groupAllowFrom') => {
+    const list = settings[key];
+    if (Array.isArray(list) && list.some((entry) => !hasId(entry))) patch[key] = list.filter(hasId);
+  };
+
+  const stance = deriveDmStance(settings);
+  const peopleListShown =
+    stance === 'approval' || stance === 'listed' || countListed(settings.allowFrom) > 0;
+  if (!peopleListShown) prune('allowFrom');
+  if (settings.groupPolicy !== 'allowlist') prune('groupAllowFrom');
+
+  return patch;
+};

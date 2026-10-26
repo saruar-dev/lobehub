@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { accessIssues, applyDmStance, countListed, deriveDmStance } from './accessStance';
+import {
+  accessIssues,
+  applyDmStance,
+  countListed,
+  deriveDmStance,
+  dropHiddenIncompleteRows,
+} from './accessStance';
 
 const listed = [{ id: '1' }, { id: ' ' }, { id: '2', name: 'Ada' }];
 
@@ -75,5 +81,35 @@ describe('accessIssues', () => {
 
   it('is quiet for the default setup', () => {
     expect(accessIssues({ dmPolicy: 'open', groupPolicy: 'open' })).toEqual([]);
+  });
+});
+
+describe('dropHiddenIncompleteRows', () => {
+  it('drops a half-added group row once groups are no longer limited to a list', () => {
+    expect(
+      dropHiddenIncompleteRows({
+        groupAllowFrom: [{ id: '42' }, { id: '' }],
+        groupPolicy: 'open',
+      }),
+    ).toEqual({ groupAllowFrom: [{ id: '42' }] });
+  });
+
+  it('keeps an incomplete group row while the group list is still shown', () => {
+    expect(
+      dropHiddenIncompleteRows({ groupAllowFrom: [{ id: '' }], groupPolicy: 'allowlist' }),
+    ).toEqual({});
+  });
+
+  it('drops a half-added person row when the people list is hidden', () => {
+    expect(dropHiddenIncompleteRows({ allowFrom: [{ id: '  ' }], dmPolicy: 'disabled' })).toEqual({
+      allowFrom: [],
+    });
+  });
+
+  it('leaves the people list alone while it is shown', () => {
+    expect(dropHiddenIncompleteRows({ allowFrom: [{ id: '' }], dmPolicy: 'pairing' })).toEqual({});
+    expect(
+      dropHiddenIncompleteRows({ allowFrom: [{ id: '7' }, { id: '' }], dmPolicy: 'disabled' }),
+    ).toEqual({});
   });
 });
