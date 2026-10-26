@@ -460,6 +460,7 @@
   "channel.tab.advanced": "高级",
   "channel.tab.connect": "接入",
   "channel.tab.reply": "回复方式",
+  "channel.tab.wake": "唤醒策略",
   "channel.telegram.description": "将助手连接到 Telegram，支持私聊和群聊。",
   "channel.testConnection": "测试连接",
   "channel.testFailed": "连接测试失败",

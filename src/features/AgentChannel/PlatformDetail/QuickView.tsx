@@ -83,17 +83,13 @@ const styles = stylex.create({
     fontFamily: cssVar.fontFamilyCode,
     fontSize: 12,
   },
+  // No panel fill and no card: the chat sits straight on the page beside the form.
   panel: {
-    backgroundColor: cssVar.colorFillQuaternary,
-    borderRadius: cssVar.borderRadiusLG,
-    padding: 16,
+    paddingBlock: 0,
   },
   stage: {
-    backgroundColor: cssVar.colorBgContainer,
-    borderRadius: cssVar.borderRadius,
-    boxShadow: `0 0 0 1px ${cssVar.colorFillTertiary}`,
     minHeight: 240,
-    padding: 16,
+    paddingBlockStart: 8,
   },
   toolCall: {
     borderColor: cssVar.colorBorderSecondary,

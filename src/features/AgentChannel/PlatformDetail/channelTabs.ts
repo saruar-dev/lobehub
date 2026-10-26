@@ -5,11 +5,11 @@ import { getSchemaFields, type SettingsGroupKey } from './settingsGroups';
 
 /**
  * The page is one tab per question a person asks, in the order they ask them:
- * how is it connected, who may use it, how does it reply, what else is there.
+ * how is it connected, who may use it, when may it speak up unprompted, how does it reply, what else is there.
  */
-export type ChannelTab = 'access' | 'advanced' | 'connect' | 'reply';
+export type ChannelTab = 'access' | 'advanced' | 'connect' | 'reply' | 'wake';
 
-export const TAB_ORDER: ChannelTab[] = ['connect', 'access', 'reply', 'advanced'];
+export const TAB_ORDER: ChannelTab[] = ['connect', 'access', 'wake', 'reply', 'advanced'];
 
 /** Connecting always exists; the other tabs exist when the platform has settings for them. */
 export const resolveTabs = (settingsGroupKeys: SettingsGroupKey[]): ChannelTab[] =>

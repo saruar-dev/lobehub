@@ -145,6 +145,7 @@ export const FooterNotices = memo<FooterNoticesProps>(
             showIcon
             title={saveResult.type === 'success' ? t('channel.saved') : t('channel.saveFailed')}
             type={saveResult.type}
+            variant="borderless"
             description={
               saveResult.type === 'error' ? (
                 <ResultDetail
@@ -161,6 +162,7 @@ export const FooterNotices = memo<FooterNoticesProps>(
             closable
             showIcon
             type={connectResult.type}
+            variant="borderless"
             description={
               connectResult.type === 'error' ? (
                 <ResultDetail
@@ -183,6 +185,7 @@ export const FooterNotices = memo<FooterNoticesProps>(
             closable
             showIcon
             type={testResult.type}
+            variant="borderless"
             description={
               testResult.type === 'error' ? (
                 <ResultDetail
@@ -204,6 +207,7 @@ export const FooterNotices = memo<FooterNoticesProps>(
             description={t('channel.userIdMissingDesc')}
             message={t('channel.userIdMissingTitle')}
             type="info"
+            variant="borderless"
           />
         )}
 
@@ -214,6 +218,7 @@ export const FooterNotices = memo<FooterNoticesProps>(
             description={t('channel.qq.webhookMigrationDesc')}
             message={t('channel.qq.webhookMigrationTitle')}
             type="info"
+            variant="borderless"
           />
         )}
 
@@ -224,6 +229,7 @@ export const FooterNotices = memo<FooterNoticesProps>(
             description={t('channel.slack.webhookMigrationDesc')}
             message={t('channel.slack.webhookMigrationTitle')}
             type="info"
+            variant="borderless"
           />
         )}
 
@@ -234,6 +240,7 @@ export const FooterNotices = memo<FooterNoticesProps>(
             description={t('channel.feishu.webhookMigrationDesc')}
             message={t('channel.feishu.webhookMigrationTitle')}
             type="info"
+            variant="borderless"
           />
         )}
       </div>
@@ -353,6 +360,7 @@ export const FooterActions = memo<FooterActionsProps>(
             <Alert
               showIcon
               type="info"
+              variant="borderless"
               message={
                 <Trans<'channel.endpointUrlHint', 'agent'>
                   components={{ bold: <strong /> }}

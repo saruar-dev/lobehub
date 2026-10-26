@@ -25,7 +25,7 @@ export const getSchemaFields = (
   });
 };
 
-export type SettingsGroupKey = 'access' | 'advanced' | 'connect' | 'reply';
+export type SettingsGroupKey = 'access' | 'advanced' | 'connect' | 'reply' | 'wake';
 
 export interface SettingsGroup {
   fields: FieldSchema[];
@@ -48,6 +48,9 @@ const ACCESS_KEYS = [
 /** What a reply looks like in the chat, plus the keywords that wake the bot. */
 export const REPLY_KEYS = ['displayToolCalls', 'showUsageStats', 'reactionMode', 'watchKeywords'];
 
+/** When the bot may speak up without being addressed: the bot-wake options all share this prefix. */
+const WAKE_KEY_PREFIX = 'botWake';
+
 /** How the bot reaches the platform: which server it acts on and how events arrive. */
 const CONNECT_KEYS = ['serverId', 'connectionMode'];
 
@@ -67,13 +70,15 @@ export const groupSettingsFields = (fields: FieldSchema[]): SettingsGroup[] => {
   const connect = pick(CONNECT_KEYS);
   const access = pick(ACCESS_KEYS);
   const reply = pick(REPLY_KEYS);
-  const placed = new Set([...connect, ...access, ...reply].map((field) => field.key));
+  const wake = fields.filter((field) => field.key.startsWith(WAKE_KEY_PREFIX));
+  const placed = new Set([...connect, ...access, ...wake, ...reply].map((field) => field.key));
   const advanced = fields.filter((field) => !placed.has(field.key));
 
   return (
     [
       { fields: connect, key: 'connect' },
       { fields: access, key: 'access' },
+      { fields: wake, key: 'wake' },
       { fields: reply, key: 'reply' },
       { fields: advanced, key: 'advanced' },
     ] satisfies SettingsGroup[]

@@ -70,7 +70,7 @@ const Harness = ({ settings }: { settings?: Record<string, unknown> }) => {
   return (
     <Body
       hasConfig
-      activeTab="advanced"
+      activeTab="wake"
       currentConfig={{ applicationId: '1', credentials: {}, settings: saved }}
       form={form}
       platformDef={platformDef}

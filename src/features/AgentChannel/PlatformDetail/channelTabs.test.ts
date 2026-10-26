@@ -19,9 +19,10 @@ const schema: FieldSchema[] = [
 
 describe('resolveTabs', () => {
   it('always has connect, then the settings tabs the platform has, in page order', () => {
-    expect(resolveTabs(['advanced', 'access', 'reply'])).toEqual([
+    expect(resolveTabs(['advanced', 'reply', 'wake', 'access'])).toEqual([
       'connect',
       'access',
+      'wake',
       'reply',
       'advanced',
     ]);

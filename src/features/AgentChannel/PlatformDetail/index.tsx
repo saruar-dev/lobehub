@@ -14,6 +14,7 @@ import type { SerializedPlatformDefinition } from '@/server/services/bot/platfor
 import { agentBotProviderService } from '@/services/agentBotProvider';
 import { useAgentStore } from '@/store/agent';
 import { agentSelectors } from '@/store/agent/selectors';
+import { useServerConfigStore } from '@/store/serverConfig';
 import { BOT_RUNTIME_STATUSES, type BotRuntimeStatusSnapshot } from '@/types/botRuntimeStatus';
 
 import { keepPendingConnectResult, toTestResult } from './actionResults';
@@ -53,9 +54,9 @@ const styles = createStaticStyles(({ css, cssVar }) => ({
   // there is no room for two columns, so the quick view leads the page.
   layout: css`
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 320px;
-    gap: 24px;
-    align-items: start;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 0;
+    align-items: stretch;
 
     width: 100%;
     max-width: 1200px;
@@ -72,24 +73,37 @@ const styles = createStaticStyles(({ css, cssVar }) => ({
     align-items: center;
 
     min-width: 0;
+    padding-inline-end: 32px;
 
     @media (width <= 1100px) {
       grid-row: 2;
     }
   `,
+  // The preview is the other half of a split: a divider on its left edge, no
+  // fill, and the chat itself sticks while the form scrolls.
   quickView: css`
-    position: sticky;
-    inset-block-start: 16px;
-
     grid-column: 2;
     grid-row: 1;
+    padding-inline-start: 32px;
+    border-inline-start: 1px solid ${cssVar.colorBorderSecondary};
 
+    @media (width <= 1100px) {
+      grid-column: 1;
+      grid-row: 1;
+
+      padding-block-end: 16px;
+      padding-inline-start: 0;
+      border-block-end: 1px solid ${cssVar.colorBorderSecondary};
+      border-inline-start: none;
+    }
+  `,
+  quickViewSticky: css`
+    position: sticky;
+    inset-block-start: 16px;
     margin-block-start: 8px;
 
     @media (width <= 1100px) {
       position: static;
-      grid-column: 1;
-      grid-row: 1;
     }
   `,
   main: css`
@@ -174,6 +188,9 @@ const PlatformDetail = memo<PlatformDetailProps>(
     useEffect(() => {
       storedRef.current = storedValues;
     }, [storedValues]);
+    // Options behind a rollout flag are left out of the tabs until the flag is on.
+    const featureFlags = useServerConfigStore((state) => state.featureFlags) as
+      Record<string, unknown> | undefined;
     const replyKeys = useMemo(
       () =>
         REPLY_KEYS.filter((key) =>
@@ -197,11 +214,11 @@ const PlatformDetail = memo<PlatformDetailProps>(
     const tabs = useMemo(
       () =>
         resolveTabs(
-          groupSettingsFields(getSchemaFields(platformDef.schema, 'settings')).map(
+          groupSettingsFields(getSchemaFields(platformDef.schema, 'settings', featureFlags)).map(
             (group) => group.key,
           ),
         ),
-      [platformDef.schema],
+      [featureFlags, platformDef.schema],
     );
     const activeTab =
       pickedTab && tabs.includes(pickedTab) ? pickedTab : defaultTab(tabs, !!currentConfig);
@@ -722,12 +739,14 @@ const PlatformDetail = memo<PlatformDetailProps>(
             </div>
             <div className={styles.layout}>
               <div className={styles.quickView}>
-                <QuickView
-                  botAvatar={{ avatar: agentAvatar, background: agentBackground }}
-                  botName={agentName}
-                  form={form}
-                  platformDef={platformDef}
-                />
+                <div className={styles.quickViewSticky}>
+                  <QuickView
+                    botAvatar={{ avatar: agentAvatar, background: agentBackground }}
+                    botName={agentName}
+                    form={form}
+                    platformDef={platformDef}
+                  />
+                </div>
               </div>
               <div className={styles.primary}>
                 <ChannelTabBar

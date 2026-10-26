@@ -579,6 +579,7 @@ export default {
   'channel.tab.connect': 'Connect',
   'channel.tab.access': 'Access',
   'channel.tab.reply': 'Replies',
+  'channel.tab.wake': 'Wake policy',
   'channel.tab.advanced': 'Advanced',
   'channel.group.connection': 'Connection options',
   'channel.reply.instant':

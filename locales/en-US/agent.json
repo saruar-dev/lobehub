@@ -460,6 +460,7 @@
   "channel.tab.advanced": "Advanced",
   "channel.tab.connect": "Connect",
   "channel.tab.reply": "Replies",
+  "channel.tab.wake": "Wake policy",
   "channel.telegram.description": "Connect this agent to Telegram for private and group chats.",
   "channel.testConnection": "Test Connection",
   "channel.testFailed": "Connection test failed",

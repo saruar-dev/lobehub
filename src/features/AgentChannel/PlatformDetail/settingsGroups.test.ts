@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { FieldSchema } from '@/server/services/bot/platforms/types';
 
-import { groupSettingsFields } from './settingsGroups';
+import { getSchemaFields, groupSettingsFields } from './settingsGroups';
 
 const field = (key: string): FieldSchema => ({ key, label: key, type: 'string' });
 
@@ -52,6 +52,19 @@ describe('groupSettingsFields', () => {
     ]);
   });
 
+  it('gives the bot-wake options their own group between access and replies', () => {
+    const groups = groupSettingsFields(
+      ['charLimit', 'botWakeEnabled', 'displayToolCalls', 'botWakeMode', 'dmPolicy'].map(field),
+    );
+
+    expect(groups.map((g) => [g.key, g.fields.map((f) => f.key)])).toEqual([
+      ['access', ['dmPolicy']],
+      ['wake', ['botWakeEnabled', 'botWakeMode']],
+      ['reply', ['displayToolCalls']],
+      ['advanced', ['charLimit']],
+    ]);
+  });
+
   it('drops sections a platform has no fields for', () => {
     const groups = groupSettingsFields(['displayToolCalls', 'watchKeywords'].map(field));
 
@@ -60,5 +73,30 @@ describe('groupSettingsFields', () => {
 
   it('returns nothing for a platform without settings', () => {
     expect(groupSettingsFields([])).toEqual([]);
+  });
+});
+
+describe('getSchemaFields', () => {
+  const schema: FieldSchema[] = [
+    {
+      key: 'settings',
+      label: 'settings',
+      properties: [
+        field('charLimit'),
+        { ...field('botWakeEnabled'), featureFlag: 'enableBotWake' },
+      ],
+      type: 'object',
+    },
+  ];
+
+  it('hides a field behind a rollout flag until the flag is on', () => {
+    expect(getSchemaFields(schema, 'settings').map((f) => f.key)).toEqual(['charLimit']);
+    expect(getSchemaFields(schema, 'settings', { enableBotWake: false }).map((f) => f.key)).toEqual(
+      ['charLimit'],
+    );
+    expect(getSchemaFields(schema, 'settings', { enableBotWake: true }).map((f) => f.key)).toEqual([
+      'charLimit',
+      'botWakeEnabled',
+    ]);
   });
 });
