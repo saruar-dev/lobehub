@@ -96,6 +96,10 @@ const styles = createStaticStyles(({ css, cssVar }) => ({
     max-width: 1024px;
     padding-block-end: 16px;
   `,
+  tabs: css`
+    width: 100%;
+    max-width: 1024px;
+  `,
   quickView: css`
     grid-column: 2;
     grid-row: 1;
@@ -765,12 +769,14 @@ const PlatformDetail = memo<PlatformDetailProps>(
                     }
                   />
                 </div>
-                <ChannelTabBar
-                  active={activeTab}
-                  issues={tabIssues}
-                  tabs={tabs}
-                  onChange={setPickedTab}
-                />
+                <div className={styles.tabs}>
+                  <ChannelTabBar
+                    active={activeTab}
+                    issues={tabIssues}
+                    tabs={tabs}
+                    onChange={setPickedTab}
+                  />
+                </div>
                 <FooterNotices
                   connectResult={connectResult}
                   currentConfig={currentConfig}
@@ -819,6 +825,7 @@ const PlatformDetail = memo<PlatformDetailProps>(
                       platformDef={platformDef}
                       extra={
                         <ActionIcon
+                          aria-label={t('channel.quickView.collapse')}
                           icon={PanelRightClose}
                           size={'small'}
                           title={t('channel.quickView.collapse')}
