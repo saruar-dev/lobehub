@@ -25,7 +25,8 @@ describe('groupSettingsFields', () => {
 
     expect(groups.map((g) => [g.key, g.fields.map((f) => f.key)])).toEqual([
       ['access', ['userId', 'serverId', 'dmPolicy', 'allowFrom', 'groupPolicy']],
-      ['reply', ['displayToolCalls', 'reactionMode', 'watchKeywords']],
+      ['wake', ['watchKeywords']],
+      ['reply', ['displayToolCalls', 'reactionMode']],
       ['advanced', ['charLimit', 'historyLimit']],
     ]);
   });
@@ -56,21 +57,28 @@ describe('groupSettingsFields', () => {
     ]);
   });
 
-  it('gives the bot-wake options their own group between access and replies', () => {
+  it('puts the watch keywords and the bot-wake options in one group between access and replies', () => {
     const groups = groupSettingsFields(
-      ['charLimit', 'botWakeEnabled', 'displayToolCalls', 'botWakeMode', 'dmPolicy'].map(field),
+      [
+        'charLimit',
+        'botWakeEnabled',
+        'displayToolCalls',
+        'botWakeMode',
+        'dmPolicy',
+        'watchKeywords',
+      ].map(field),
     );
 
     expect(groups.map((g) => [g.key, g.fields.map((f) => f.key)])).toEqual([
       ['access', ['dmPolicy']],
-      ['wake', ['botWakeEnabled', 'botWakeMode']],
+      ['wake', ['watchKeywords', 'botWakeEnabled', 'botWakeMode']],
       ['reply', ['displayToolCalls']],
       ['advanced', ['charLimit']],
     ]);
   });
 
   it('drops sections a platform has no fields for', () => {
-    const groups = groupSettingsFields(['displayToolCalls', 'watchKeywords'].map(field));
+    const groups = groupSettingsFields(['displayToolCalls', 'reactionMode'].map(field));
 
     expect(groups.map((g) => g.key)).toEqual(['reply']);
   });

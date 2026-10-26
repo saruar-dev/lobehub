@@ -24,7 +24,7 @@ import type { ChannelTab } from './channelTabs';
 import { extractSettingsDefaults, WAKE_MASTER_KEY } from './formState';
 import type { ChannelFormValues } from './index';
 import { ApplicationIdField, SchemaField } from './SchemaField';
-import { getSchemaFields, groupSettingsFields } from './settingsGroups';
+import { getSchemaFields, groupSettingsFields, WAKE_KEY_PREFIX } from './settingsGroups';
 
 /**
  * One tab's content. Every panel stays mounted and only the active one is
@@ -296,11 +296,13 @@ const Body = memo<BodyProps>(
           .filter((group) => group.key !== 'connect')
           .map((group) => (
             <Panel active={activeTab === group.key} key={group.key} tab={group.key}>
-              {group.key === 'wake' && (
-                <Text fontSize={12} type={'secondary'}>
-                  {t('channel.wake.intro')}
-                </Text>
-              )}
+              {/* The intro explains the rules, so it shows only where they are released. */}
+              {group.key === 'wake' &&
+                group.fields.some((field) => field.key.startsWith(WAKE_KEY_PREFIX)) && (
+                  <Text fontSize={12} type={'secondary'}>
+                    {t('channel.wake.intro')}
+                  </Text>
+                )}
               {group.key === 'reply' && hasConfig && (
                 <Text fontSize={12} type={'secondary'}>
                   {t('channel.reply.instant')}

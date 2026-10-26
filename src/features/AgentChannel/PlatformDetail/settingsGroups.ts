@@ -47,11 +47,15 @@ const ACCESS_KEYS = [
   'groupAllowFrom',
 ];
 
-/** What a reply looks like in the chat, plus the keywords that wake the bot. */
-export const REPLY_KEYS = ['displayToolCalls', 'showUsageStats', 'reactionMode', 'watchKeywords'];
+/** What a reply looks like in the chat. */
+export const REPLY_KEYS = ['displayToolCalls', 'showUsageStats', 'reactionMode'];
 
-/** When the bot may speak up without being addressed: the bot-wake options all share this prefix. */
-const WAKE_KEY_PREFIX = 'botWake';
+/**
+ * When the bot speaks up without being @mentioned: first the keywords that wake it, then the
+ * bot-wake rules, which all share one prefix and judge the messages nobody addressed to it.
+ */
+const WAKE_KEYS = ['watchKeywords'];
+export const WAKE_KEY_PREFIX = 'botWake';
 
 /** How the bot reaches the platform: how events arrive. */
 const CONNECT_KEYS = ['connectionMode'];
@@ -72,7 +76,10 @@ export const groupSettingsFields = (fields: FieldSchema[]): SettingsGroup[] => {
   const connect = pick(CONNECT_KEYS);
   const access = pick(ACCESS_KEYS);
   const reply = pick(REPLY_KEYS);
-  const wake = fields.filter((field) => field.key.startsWith(WAKE_KEY_PREFIX));
+  const wake = [
+    ...pick(WAKE_KEYS),
+    ...fields.filter((field) => field.key.startsWith(WAKE_KEY_PREFIX)),
+  ];
   const placed = new Set([...connect, ...access, ...wake, ...reply].map((field) => field.key));
   const advanced = fields.filter((field) => !placed.has(field.key));
 
