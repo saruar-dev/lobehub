@@ -132,7 +132,7 @@ export default {
     'We are working on bringing this integration to LobeHub. Stay tuned for updates.',
   'channel.comingSoonTitle': '{{name}} integration is coming soon',
   'channel.copy': 'Copy',
-  'channel.deleteAllChannels': 'Remove All Bots',
+  'channel.deleteAllChannels': 'Remove All IM Bots',
   'channel.deleteAllConfirmDesc':
     'This action will permanently remove all bots and their configurations for this agent. This cannot be undone.',
   'channel.deleteAllSuccess': 'All channels removed',
@@ -316,7 +316,7 @@ export default {
   'channel.wechatUserId': 'WeChat User ID',
   'channel.wechatBotIdHint': 'Bot identifier assigned after QR code authorization.',
   'channel.wechatUserIdHint': 'WeChat account identifier returned by the authorization flow.',
-  'channel.removeChannel': 'Remove Bot',
+  'channel.removeChannel': 'Remove IM Bot',
   'channel.removed': 'Bot removed',
   'channel.removeFailed': 'Failed to remove bot',
   'channel.save': 'Save Configuration',

@@ -1898,7 +1898,7 @@ export default {
   'supervisor.todoList.allComplete': 'All tasks completed',
   'supervisor.todoList.title': 'Tasks Completed',
   'tab.groupProfile': 'Group Profile',
-  'tab.integration': 'Bots',
+  'tab.integration': 'IM Bots',
   'tab.profile': 'Agent Profile',
   'tab.profileBasic': 'Profile',
   'tab.search': 'Search',
