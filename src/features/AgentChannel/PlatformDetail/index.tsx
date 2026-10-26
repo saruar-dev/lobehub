@@ -77,6 +77,7 @@ const styles = createStaticStyles(({ css, cssVar }) => ({
 
     @media (width <= 1100px) {
       grid-row: 2;
+      padding-inline-end: 0;
     }
   `,
   // The preview is the other half of a split: a divider on its left edge, no
