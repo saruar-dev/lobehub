@@ -261,6 +261,8 @@ interface FooterActionsProps {
   disabled?: boolean;
   form: FormInstance<ChannelFormValues>;
   hasConfig: boolean;
+  /** The setup steps already offer the save, so the bar does not repeat it. */
+  hideSave?: boolean;
   isDirty: boolean;
   onCopied: () => void;
   onDelete: () => void;
@@ -279,6 +281,7 @@ export const FooterActions = memo<FooterActionsProps>(
     platformDef,
     form,
     hasConfig,
+    hideSave,
     isDirty,
     connecting,
     disabled,
@@ -333,16 +336,18 @@ export const FooterActions = memo<FooterActionsProps>(
                 {t('channel.discard')}
               </Button>
             )}
-            <Button
-              disabled={writeDisabled}
-              loading={saving || connecting}
-              type="primary"
-              onClick={onSave}
-            >
-              {connecting
-                ? t('channel.connecting')
-                : t(hasConfig ? 'channel.save' : 'channel.saveAndConnect')}
-            </Button>
+            {!hideSave && (
+              <Button
+                disabled={writeDisabled}
+                loading={saving || connecting}
+                type="primary"
+                onClick={onSave}
+              >
+                {connecting
+                  ? t('channel.connecting')
+                  : t(hasConfig ? 'channel.save' : 'channel.saveAndConnect')}
+              </Button>
+            )}
           </Flexbox>
         </div>
 

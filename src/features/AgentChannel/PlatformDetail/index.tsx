@@ -27,11 +27,19 @@ import { agentSelectors } from '@/store/agent/selectors';
 import { useServerConfigStore } from '@/store/serverConfig';
 import { BOT_RUNTIME_STATUSES, type BotRuntimeStatusSnapshot } from '@/types/botRuntimeStatus';
 
+import { platformCredentialBodyMap } from '../platform/registry';
+import { getSetupGuide } from '../quickSetup/guides';
 import { keepPendingConnectResult, toTestResult } from './actionResults';
 import Body from './Body';
 import { ChannelHero } from './ChannelHero';
 import { ChannelTabBar } from './ChannelTabBar';
-import { type ChannelTab, defaultTab, resolveTabs, tabsWithIssues } from './channelTabs';
+import {
+  type ChannelTab,
+  defaultTab,
+  footerSaveHidden,
+  resolveTabs,
+  tabsWithIssues,
+} from './channelTabs';
 import { FooterActions, FooterNotices } from './Footer';
 import {
   findOverLimitSettings,
@@ -841,6 +849,14 @@ const PlatformDetail = memo<PlatformDetailProps>(
                   saving={saving}
                   testing={testing}
                   writeDisabled={writeDisabled}
+                  hideSave={footerSaveHidden({
+                    activeTab,
+                    hasConfig: !!currentConfig,
+                    // Platforms with their own credential body (WeChat, iMessage) have no steps.
+                    stepSave:
+                      !platformCredentialBodyMap[platformDef.id] &&
+                      !!getSetupGuide(platformDef.id, { appName: '' }),
+                  })}
                   onCopied={() => toast.success(t('channel.copied'))}
                   onDelete={handleDelete}
                   onDiscard={handleDiscard}

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { FieldSchema } from '@/server/services/bot/platforms/types';
 
-import { defaultTab, resolveTabs, tabsWithIssues } from './channelTabs';
+import { defaultTab, footerSaveHidden, resolveTabs, tabsWithIssues } from './channelTabs';
 
 const schema: FieldSchema[] = [
   { key: 'applicationId', label: 'id', required: true, type: 'string' },
@@ -78,5 +78,22 @@ describe('tabsWithIssues', () => {
       'connect',
       'access',
     ]);
+  });
+});
+
+describe('footerSaveHidden', () => {
+  it('leaves the save to the setup steps on the Connect tab of a new bot', () => {
+    expect(footerSaveHidden({ activeTab: 'connect', hasConfig: false, stepSave: true })).toBe(true);
+  });
+
+  it('keeps the bar save where no step offers it', () => {
+    // Another tab of a new bot: no step there.
+    expect(footerSaveHidden({ activeTab: 'access', hasConfig: false, stepSave: true })).toBe(false);
+    // A platform without setup steps (WeChat, iMessage).
+    expect(footerSaveHidden({ activeTab: 'connect', hasConfig: false, stepSave: false })).toBe(
+      false,
+    );
+    // A saved bot: the steps fold away and have no save step.
+    expect(footerSaveHidden({ activeTab: 'connect', hasConfig: true, stepSave: true })).toBe(false);
   });
 });

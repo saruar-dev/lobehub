@@ -48,3 +48,19 @@ export const tabsWithIssues = (values: ChannelValues, schema: FieldSchema[]): Ch
 
   return TAB_ORDER.filter((tab) => issues.has(tab));
 };
+
+/**
+ * Whether the bottom bar leaves out its Save button. While a bot is being set up, the Connect
+ * tab's steps end with a "Save and connect" step of their own; the bar repeating it below reads as
+ * a second, different action. Other tabs have no such step, so the bar keeps it there.
+ */
+export const footerSaveHidden = ({
+  activeTab,
+  hasConfig,
+  stepSave,
+}: {
+  activeTab: ChannelTab;
+  hasConfig: boolean;
+  /** The platform's setup steps include the save step. */
+  stepSave: boolean;
+}): boolean => !hasConfig && stepSave && activeTab === 'connect';
