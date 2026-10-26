@@ -230,8 +230,8 @@ const BodyHarness = ({
 
   return (
     <Body
-      activeTab={activeTab}
       hasConfig
+      activeTab={activeTab}
       currentConfig={currentConfig}
       disabled={disabled}
       form={form}
@@ -248,7 +248,6 @@ const FooterHarness = ({ disabled }: { disabled?: boolean }) => {
       hasConfig
       isDirty
       connecting={false}
-      currentConfig={currentConfig}
       disabled={disabled}
       form={form}
       platformDef={platformDef}
@@ -292,7 +291,9 @@ describe('Agent channel permission gates', () => {
     const { rerender } = render(<BodyHarness activeTab="advanced" />);
 
     expect(screen.getByRole('textbox', { name: /^channel.charLimit/ })).toBeInTheDocument();
-    expect(screen.queryByRole('textbox', { name: /^channel.applicationId/ })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('textbox', { name: /^channel.applicationId/ }),
+    ).not.toBeInTheDocument();
     // The hidden panel is still in the document, so its values survive a save.
     expect(document.querySelector('#channel-panel-connect')).toHaveAttribute('hidden');
 

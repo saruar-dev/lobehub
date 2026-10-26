@@ -12,9 +12,9 @@ export default {
   'channel.quickSetup.scanToggle': 'Scan to create instead',
   'channel.quickSetup.guideTitle': 'Setup steps',
   'channel.quickSetup.feishu.scan.brandMismatch.lark':
-    'This app was created with a Lark account. Connect it from the Lark channel instead.',
+    'This app was created with a Lark account. Connect it as a Lark bot instead.',
   'channel.quickSetup.feishu.scan.brandMismatch.feishu':
-    'This app was created with a Feishu account. Connect it from the Feishu channel instead.',
+    'This app was created with a Feishu account. Connect it as a Feishu bot instead.',
   'channel.quickSetup.feishu.scan.regenerate': 'Generate a new code',
   'channel.quickSetup.feishu.scan.title': 'Scan with Feishu to create the bot',
   'channel.quickSetup.feishu.scan.does.app': 'Creates the app with the bot capability turned on',
@@ -106,25 +106,25 @@ export default {
   'channel.connectionConfig': 'Connection Configuration',
   'channel.copied': 'Copied to clipboard',
   'channel.paidFeature.desc':
-    '{{name}} is available on paid plans. Upgrade to any paid plan to configure and keep this channel connected.',
+    '{{name}} is available on paid plans. Upgrade to any paid plan to configure and keep this bot connected.',
   'channel.paidFeature.title': 'Paid plan required',
   'channel.paidFeature.badge': 'Pro',
   'channel.paidFeature.cta.personal': 'Upgrade',
   'channel.paidFeature.cta.workspace': 'Upgrade',
   'channel.paidFeature.fieldLocked': 'Available on paid plans. Upgrade to configure this feature.',
   'channel.paidFeature.enforce.desc':
-    '{{name}} is available on paid plans. Upgrade to a paid personal plan or a Pro / Business workspace to configure and keep this channel connected.',
+    '{{name}} is available on paid plans. Upgrade to a paid personal plan or a Pro / Business workspace to configure and keep this bot connected.',
   'channel.paidFeature.enforce.desc.personal':
-    '{{name}} is available on paid personal plans. Upgrade to configure and keep this channel connected.',
+    '{{name}} is available on paid personal plans. Upgrade to configure and keep this bot connected.',
   'channel.paidFeature.enforce.desc.workspace':
-    '{{name}} is available on Pro / Business workspaces. Upgrade this workspace to configure and keep this channel connected.',
+    '{{name}} is available on Pro / Business workspaces. Upgrade this workspace to configure and keep this bot connected.',
   'channel.paidFeature.enforce.title': 'Paid plan required',
   'channel.paidFeature.notice.desc':
-    'Due to the high communication costs for the {{name}} channel, we plan to make this channel a paid feature soon. Existing connections remain available during the notice period, but creating or reconnecting this channel now requires a paid personal plan or a Pro / Business workspace.',
+    'Due to the high communication costs for the {{name}} bot, we plan to make this bot a paid feature soon. Existing connections remain available during the notice period, but creating or reconnecting this bot now requires a paid personal plan or a Pro / Business workspace.',
   'channel.paidFeature.notice.desc.personal':
-    'Due to the high communication costs for the {{name}} channel, we plan to make this channel a paid feature soon. Existing connections remain available during the notice period, but creating or reconnecting this channel requires a paid personal plan.',
+    'Due to the high communication costs for the {{name}} bot, we plan to make this bot a paid feature soon. Existing connections remain available during the notice period, but creating or reconnecting this bot requires a paid personal plan.',
   'channel.paidFeature.notice.desc.workspace':
-    'Due to the high communication costs for the {{name}} channel, we plan to make this channel a paid feature soon. Existing connections remain available during the notice period, but creating or reconnecting this channel requires upgrading this workspace to Pro or Business.',
+    'Due to the high communication costs for the {{name}} bot, we plan to make this bot a paid feature soon. Existing connections remain available during the notice period, but creating or reconnecting this bot requires upgrading this workspace to Pro or Business.',
   'channel.paidFeature.notice.title': '{{name}} will soon require a paid plan',
   'channel.paidFeature.noticeBadge': 'Pro soon',
   'channel.comingSoon': 'Coming Soon',
@@ -132,13 +132,13 @@ export default {
     'We are working on bringing this integration to LobeHub. Stay tuned for updates.',
   'channel.comingSoonTitle': '{{name}} integration is coming soon',
   'channel.copy': 'Copy',
-  'channel.deleteAllChannels': 'Remove All Channels',
+  'channel.deleteAllChannels': 'Remove All Bots',
   'channel.deleteAllConfirmDesc':
-    'This action will permanently remove all message channels and their configurations for this agent. This cannot be undone.',
+    'This action will permanently remove all bots and their configurations for this agent. This cannot be undone.',
   'channel.deleteAllSuccess': 'All channels removed',
-  'channel.deleteAllFailed': 'Failed to remove all channels',
+  'channel.deleteAllFailed': 'Failed to remove all bots',
   'channel.deleteConfirmDesc':
-    'This action will permanently remove this message channel and its configuration. This cannot be undone.',
+    'This action will permanently remove this bot and its configuration. This cannot be undone.',
   'channel.devWebhookProxyUrl': 'HTTPS Tunnel URL',
   'channel.devWebhookProxyUrlHint':
     'Optional. HTTPS tunnel URL for forwarding webhook requests to local dev server.',
@@ -195,13 +195,13 @@ export default {
   'channel.connectionError.invalid_credentials':
     'The bot credentials are invalid. Check the application ID, secret, and access tokens.',
   'channel.connectionError.missing_credentials':
-    'Required bot credentials are missing. Complete the channel configuration and try again.',
+    'Required bot credentials are missing. Complete the bot configuration and try again.',
   'channel.connectionError.permission_denied':
     "The platform denied access. Check the bot's permissions and enabled capabilities.",
   'channel.connectionError.rate_limited':
     'The platform is rate limiting this bot. Wait a moment and try again.',
   'channel.connectionError.session_expired':
-    'The bot session has expired. Save the channel again to reconnect it.',
+    'The bot session has expired. Save the bot again to reconnect it.',
   'channel.connectionError.upstream_unavailable':
     'The platform service is temporarily unavailable. LobeHub will try again later.',
   'channel.endpointUrl': 'Webhook URL',
@@ -214,7 +214,7 @@ export default {
   'channel.imessage.description':
     'Connect this agent to iMessage through the local LobeHub Desktop BlueBubbles bridge.',
   'channel.imessage.applicationIdHint':
-    'A stable identifier shared by the cloud channel and the Desktop bridge.',
+    'A stable identifier shared by the cloud bot and the Desktop bridge.',
   'channel.imessage.applicationIdPlaceholder': 'e.g. home-mac-mini',
   'channel.imessage.blueBubblesPassword': 'BlueBubbles Password',
   'channel.imessage.blueBubblesPasswordHint':
@@ -316,9 +316,9 @@ export default {
   'channel.wechatUserId': 'WeChat User ID',
   'channel.wechatBotIdHint': 'Bot identifier assigned after QR code authorization.',
   'channel.wechatUserIdHint': 'WeChat account identifier returned by the authorization flow.',
-  'channel.removeChannel': 'Remove Channel',
-  'channel.removed': 'Channel removed',
-  'channel.removeFailed': 'Failed to remove channel',
+  'channel.removeChannel': 'Remove Bot',
+  'channel.removed': 'Bot removed',
+  'channel.removeFailed': 'Failed to remove bot',
   'channel.save': 'Save Configuration',
   'channel.setupGuide': 'Setup Guide',
   'channel.saveFailed': 'Failed to save configuration',
@@ -883,7 +883,7 @@ export default {
   'transfer.confirm.warning': "Some links won't move:",
   'transfer.confirm.plugins': 'Custom plugins may not be available in the target workspace',
   'transfer.confirm.chatGroups': 'Multi-agent group associations will be removed',
-  'transfer.confirm.botChannels': 'Bot channel connections may need to be refreshed after moving',
+  'transfer.confirm.botChannels': 'Bot connections may need to be refreshed after moving',
   'transfer.success': 'Agent moved successfully',
   'transfer.transferTo': 'Move to…',
   'transfer.transferToMember': 'Transfer to member...',

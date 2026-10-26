@@ -92,8 +92,7 @@ const Body = memo<BodyProps>(
     // Fields behind a rollout flag stay hidden until the user's flag is on (and
     // while the flags have not loaded yet).
     const featureFlags = useServerConfigStore((s) => s.featureFlags) as
-      | Record<string, unknown>
-      | undefined;
+      Record<string, unknown> | undefined;
 
     const credentialFields = useMemo(
       () => getSchemaFields(platformDef.schema, 'credentials', featureFlags),
